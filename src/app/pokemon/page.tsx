@@ -1,7 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getSpeciesList, getSpecies, getPokemonId, getEnglishName, getListedVarieties } from "@/lib/pokeapi";
+import {
+  getSpeciesList,
+  getSpecies,
+  getPokemonId,
+  getEnglishName,
+  getListedVarieties,
+} from "@/lib/pokeapi";
 
 export default async function PokemonPage({
   searchParams,
@@ -25,7 +31,7 @@ export default async function PokemonPage({
       <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         <table className="w-full table-fixed">
           <thead>
-            <tr>
+            <tr className="bg-gray-50 dark:bg-gray-950">
               <th className="w-24 text-left py-4 pl-8 pr-2">#</th>
               <th className="w-80 text-left py-4">
                 <span className="sr-only">Sprite</span>
@@ -37,7 +43,7 @@ export default async function PokemonPage({
             {species.map((s) => (
               <tr
                 key={s.name}
-                className="even:bg-gray-50 dark:even:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="relative bg-gray-50 even:bg-gray-100 hover:bg-gray-200 dark:bg-gray-950 dark:even:bg-gray-900 dark:hover:bg-gray-800"
               >
                 <td className="py-2 pl-8 pr-2">
                   #{String(s.id).padStart(4, "0")}
@@ -55,7 +61,14 @@ export default async function PokemonPage({
                     ))}
                   </div>
                 </td>
-                <td className="py-2 pl-2 pr-8">{getEnglishName(s)}</td>
+                <td className="py-2 pl-2 pr-8">
+                  <Link
+                    href={`/pokemon/${s.name}`}
+                    className="after:absolute after:inset-0"
+                  >
+                    {getEnglishName(s)}
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -66,7 +79,7 @@ export default async function PokemonPage({
         {page > 1 && (
           <Link
             href={`/pokemon?page=${page - 1}`}
-            className="rounded-lg border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="rounded-lg px-4 py-2 border border-gray-200 bg-gray-50 hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-800"
           >
             Previous page
           </Link>
@@ -75,7 +88,7 @@ export default async function PokemonPage({
         {data.next && (
           <Link
             href={`/pokemon?page=${page + 1}`}
-            className="ml-auto rounded-lg border border-gray-200 dark:border-gray-800 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="ml-auto rounded-lg px-4 py-2 border border-gray-200 bg-gray-50 hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-800"
           >
             Next page
           </Link>

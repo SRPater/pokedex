@@ -68,14 +68,14 @@ export async function getSpeciesList(
   return res.json();
 }
 
-export async function getSpecies(id: number): Promise<PokemonSpecies> {
+export async function getSpecies(slug: number | string): Promise<PokemonSpecies> {
   const res = await fetch(
-    `https://pokeapi.co/api/v2/pokemon-species/${id}`,
+    `https://pokeapi.co/api/v2/pokemon-species/${slug}`,
     { next: { revalidate: 60 * 60 * 24 } },
   );
 
   if (!res.ok) {
-    throw new Error(`Error fetching Pokémon species with id ${id}`);
+    throw new Error(`Error fetching Pokémon species: ${slug}`);
   }
 
   return res.json();
