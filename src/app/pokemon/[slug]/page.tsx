@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
-import { getSpecies, getPokemonForm, getPokemonId, getEnglishName, getFormName } from "@/lib/pokeapi";
+import { getSpecies, getPokemonForm, getPokemon, getPokemonId, getEnglishName, getFormName } from "@/lib/pokeapi";
 import Card from "@/components/Card";
 
 export default async function PokemonDetailPage({

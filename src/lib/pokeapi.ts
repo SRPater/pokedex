@@ -45,6 +45,29 @@ export type PokemonForm = {
   form_names: LocalizedName[];
 };
 
+export type Pokemon = {
+  name: string;
+  height: number;
+  weight: number;
+  types: {
+    type: {
+      name: string
+    }
+  }[];
+  abilities: {
+    is_hidden: boolean;
+    ability: {
+      name: string
+    }
+  }[];
+  stats: {
+    base_stat: number;
+    stat: {
+      name: string
+    }
+  }[];
+};
+
 export async function getSpeciesList(
   limit: number,
   offset: number,
@@ -54,10 +77,7 @@ export async function getSpeciesList(
     { next: { revalidate: 60 * 60 * 24 } },
   );
 
-  if (!res.ok) {
-    throw new Error("Error fetching Pokémon species.");
-  }
-
+  if (!res.ok) throw new Error("Error fetching Pokémon species.");
   return res.json();
 }
 
@@ -67,10 +87,7 @@ export async function getSpecies(slug: number | string): Promise<PokemonSpecies>
     { next: { revalidate: 60 * 60 * 24 } },
   );
 
-  if (!res.ok) {
-    throw new Error(`Error fetching Pokémon species: ${slug}`);
-  }
-
+  if (!res.ok) throw new Error(`Error fetching Pokémon species: ${slug}.`);
   return res.json();
 }
 
@@ -80,10 +97,17 @@ export async function getPokemonForm(name: string): Promise<PokemonForm> {
     {next: { revalidate: 60 * 60 * 24 } },
   );
 
-  if (!res.ok) {
-    throw new Error(`Error fetching Pokémon form: ${name}`);
-  }
+  if (!res.ok) throw new Error(`Error fetching Pokémon form: ${name}.`);
+  return res.json();
+}
 
+export async function getPokemon(name: string): Promise<Pokemon> {
+  const res = await fetch(
+    `https://pokeapi.co/api/v2/pokemon/${name}`,
+    {next: { revalidate: 60 * 60 * 24 } },
+  );
+
+  if (!res.ok) throw new Error(`Error fetching Pokémon: ${name}.`);
   return res.json();
 }
 
