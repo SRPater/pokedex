@@ -90,12 +90,22 @@ export function getEnglishName(species: PokemonSpecies): string {
   return species.names.find((n) => n.language.name === "en")?.name ?? species.name;
 }
 
-const DEFAULT_FORM_ONLY = new Set([25, 1007, 1008]);
+const KEPT_SUFFIXES = [
+  "-male",
+  "-female",
+  "-alola",
+  "-galar",
+  "-hisui",
+  "-paldea",
+  "-galar-standard", // Galarian Darmanitan
+  "-breed",          // Paldean Tauros
+];
 
 export function getListedVarieties(species: PokemonSpecies) {
-  if (DEFAULT_FORM_ONLY.has(species.id)) {
-    return species.varieties.filter((v) => v.is_default);
-  }
-
-  return species.varieties.filter((v) => !(v.pokemon.name.includes("-mega") || v.pokemon.name.includes("-primal") || v.pokemon.name.endsWith("-gmax")));
+  return species.varieties.filter(
+    (v) =>
+      !v.pokemon.name.includes("-totem") &&
+      (v.is_default ||
+        KEPT_SUFFIXES.some((suffix) => v.pokemon.name.endsWith(suffix))),
+  );
 }
