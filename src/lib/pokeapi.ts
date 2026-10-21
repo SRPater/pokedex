@@ -1,0 +1,101 @@
+export type PokemonListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: {
+    name: string;
+    url: string;
+  }[];
+}
+
+export type SpeciesListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: {
+    name: string;
+    url: string;
+  }[];
+}
+
+export type PokemonSpecies = {
+  id: number;
+  name: string;
+  names: {
+    name: string;
+    language: {
+      name: string;
+    };
+  }[];
+  varieties: {
+    is_default: boolean;
+    pokemon: {
+      name: string;
+      url: string;
+    };
+  }[];
+};
+
+export async function getPokemonList(
+  limit: number,
+  offset: number,
+): Promise<PokemonListResponse> {
+  const res = await fetch(
+    `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`,
+    { next: { revalidate: 60 * 60 * 24 } },
+  );
+  
+  if (!res.ok) {
+    throw new Error("Error fetching Pokémon.");
+  }
+
+  return res.json();
+}
+
+export async function getSpeciesList(
+  limit: number,
+  offset: number,
+): Promise<SpeciesListResponse> {
+  const res = await fetch(
+    `https://pokeapi.co/api/v2/pokemon-species?limit=${limit}&offset=${offset}`,
+    { next: { revalidate: 60 * 60 * 24 } },
+  );
+
+  if (!res.ok) {
+    throw new Error("Error fetching Pokémon species.");
+  }
+
+  return res.json();
+}
+
+export async function getSpecies(id: number): Promise<PokemonSpecies> {
+  const res = await fetch(
+    `https://pokeapi.co/api/v2/pokemon-species/${id}`,
+    { next: { revalidate: 60 * 60 * 24 } },
+  );
+
+  if (!res.ok) {
+    throw new Error(`Error fetching Pokémon species with id ${id}`);
+  }
+
+  return res.json();
+}
+
+export function getPokemonId(url: string): number {
+  const trimmedUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+  return Number(trimmedUrl.slice(trimmedUrl.lastIndexOf("/") + 1));
+}
+
+export function getEnglishName(species: PokemonSpecies): string {
+  return species.names.find((n) => n.language.name === "en")?.name ?? species.name;
+}
+
+const DEFAULT_FORM_ONLY = new Set([25, 1007, 1008]);
+
+export function getListedVarieties(species: PokemonSpecies) {
+  if (DEFAULT_FORM_ONLY.has(species.id)) {
+    return species.varieties.filter((v) => v.is_default);
+  }
+
+  return species.varieties.filter((v) => !(v.pokemon.name.includes("-mega") || v.pokemon.name.includes("-primal") || v.pokemon.name.endsWith("-gmax")));
+}
