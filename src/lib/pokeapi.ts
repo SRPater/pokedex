@@ -1,12 +1,20 @@
-export type PokemonListResponse = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: {
+const KEPT_SUFFIXES = [
+  "-male",
+  "-female",
+  "-alola",
+  "-galar",
+  "-hisui",
+  "-paldea",
+  "-galar-standard", // Galarian Darmanitan
+  "-breed",          // Paldean Tauros
+];
+
+export type LocalizedName = {
+  name: string;
+  language: {
     name: string;
-    url: string;
-  }[];
-}
+  };
+};
 
 export type SpeciesListResponse = {
   count: number;
@@ -21,12 +29,7 @@ export type SpeciesListResponse = {
 export type PokemonSpecies = {
   id: number;
   name: string;
-  names: {
-    name: string;
-    language: {
-      name: string;
-    };
-  }[];
+  names: LocalizedName[];
   varieties: {
     is_default: boolean;
     pokemon: {
@@ -36,21 +39,11 @@ export type PokemonSpecies = {
   }[];
 };
 
-export async function getPokemonList(
-  limit: number,
-  offset: number,
-): Promise<PokemonListResponse> {
-  const res = await fetch(
-    `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`,
-    { next: { revalidate: 60 * 60 * 24 } },
-  );
-  
-  if (!res.ok) {
-    throw new Error("Error fetching Pokémon.");
-  }
-
-  return res.json();
-}
+export type PokemonForm = {
+  name: string;
+  names: LocalizedName[];
+  form_names: LocalizedName[];
+};
 
 export async function getSpeciesList(
   limit: number,
@@ -81,25 +74,35 @@ export async function getSpecies(slug: number | string): Promise<PokemonSpecies>
   return res.json();
 }
 
+export async function getPokemonForm(name: string): Promise<PokemonForm> {
+  const res = await fetch(
+    `https://pokeapi.co/api/v2/pokemon-form/${name}`,
+    {next: { revalidate: 60 * 60 * 24 } },
+  );
+
+  if (!res.ok) {
+    throw new Error(`Error fetching Pokémon form: ${name}`);
+  }
+
+  return res.json();
+}
+
 export function getPokemonId(url: string): number {
   const trimmedUrl = url.endsWith("/") ? url.slice(0, -1) : url;
   return Number(trimmedUrl.slice(trimmedUrl.lastIndexOf("/") + 1));
 }
 
-export function getEnglishName(species: PokemonSpecies): string {
-  return species.names.find((n) => n.language.name === "en")?.name ?? species.name;
+export function findEnglish(names: LocalizedName[]): string | undefined {
+  return names.find((n) => n.language.name === "en")?.name;
 }
 
-const KEPT_SUFFIXES = [
-  "-male",
-  "-female",
-  "-alola",
-  "-galar",
-  "-hisui",
-  "-paldea",
-  "-galar-standard", // Galarian Darmanitan
-  "-breed",          // Paldean Tauros
-];
+export function getEnglishName(species: PokemonSpecies): string {
+  return findEnglish(species.names) ?? species.name;
+}
+
+export function getFormName(form: PokemonForm, species: PokemonSpecies): string {
+  return findEnglish(form.names) ?? getEnglishName(species);
+}
 
 export function getListedVarieties(species: PokemonSpecies) {
   return species.varieties.filter(

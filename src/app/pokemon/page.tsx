@@ -27,7 +27,7 @@ export default async function PokemonPage({
 
   return (
     <div className="w-full max-w-5xl mx-auto px-8 pb-8">
-      <h1 className="text-3xl font-bold py-8">All Pokémon</h1>
+      <h1 className="text-center text-3xl font-bold py-8">All Pokémon</h1>
       <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         <table className="w-full table-fixed">
           <thead>
