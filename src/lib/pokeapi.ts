@@ -6,7 +6,7 @@ const KEPT_SUFFIXES = [
   "-hisui",
   "-paldea",
   "-galar-standard", // Galarian Darmanitan
-  "-breed",          // Paldean Tauros
+  "-breed", // Paldean Tauros
 ];
 
 export type LocalizedName = {
@@ -24,7 +24,7 @@ export type SpeciesListResponse = {
     name: string;
     url: string;
   }[];
-}
+};
 
 export type PokemonSpecies = {
   id: number;
@@ -51,20 +51,21 @@ export type Pokemon = {
   weight: number;
   types: {
     type: {
-      name: string
-    }
+      name: string;
+      url: string;
+    };
   }[];
   abilities: {
     is_hidden: boolean;
     ability: {
-      name: string
-    }
+      name: string;
+    };
   }[];
   stats: {
     base_stat: number;
     stat: {
-      name: string
-    }
+      name: string;
+    };
   }[];
 };
 
@@ -81,37 +82,36 @@ export async function getSpeciesList(
   return res.json();
 }
 
-export async function getSpecies(slug: number | string): Promise<PokemonSpecies> {
-  const res = await fetch(
-    `https://pokeapi.co/api/v2/pokemon-species/${slug}`,
-    { next: { revalidate: 60 * 60 * 24 } },
-  );
+export async function getSpecies(
+  slug: number | string,
+): Promise<PokemonSpecies> {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${slug}`, {
+    next: { revalidate: 60 * 60 * 24 },
+  });
 
   if (!res.ok) throw new Error(`Error fetching Pokémon species: ${slug}.`);
   return res.json();
 }
 
 export async function getPokemonForm(name: string): Promise<PokemonForm> {
-  const res = await fetch(
-    `https://pokeapi.co/api/v2/pokemon-form/${name}`,
-    {next: { revalidate: 60 * 60 * 24 } },
-  );
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon-form/${name}`, {
+    next: { revalidate: 60 * 60 * 24 },
+  });
 
   if (!res.ok) throw new Error(`Error fetching Pokémon form: ${name}.`);
   return res.json();
 }
 
 export async function getPokemon(name: string): Promise<Pokemon> {
-  const res = await fetch(
-    `https://pokeapi.co/api/v2/pokemon/${name}`,
-    {next: { revalidate: 60 * 60 * 24 } },
-  );
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`, {
+    next: { revalidate: 60 * 60 * 24 },
+  });
 
   if (!res.ok) throw new Error(`Error fetching Pokémon: ${name}.`);
   return res.json();
 }
 
-export function getPokemonId(url: string): number {
+export function getIdFromUrl(url: string): number {
   const trimmedUrl = url.endsWith("/") ? url.slice(0, -1) : url;
   return Number(trimmedUrl.slice(trimmedUrl.lastIndexOf("/") + 1));
 }
@@ -124,7 +124,10 @@ export function getEnglishName(species: PokemonSpecies): string {
   return findEnglish(species.names) ?? species.name;
 }
 
-export function getFormName(form: PokemonForm, species: PokemonSpecies): string {
+export function getFormName(
+  form: PokemonForm,
+  species: PokemonSpecies,
+): string {
   return findEnglish(form.names) ?? getEnglishName(species);
 }
 

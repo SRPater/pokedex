@@ -5,10 +5,11 @@ import {
   getSpecies,
   getPokemonForm,
   getPokemon,
-  getPokemonId,
+  getIdFromUrl,
   getEnglishName,
   getFormName,
 } from "@/lib/pokeapi";
+import { formatHeight, formatWeight, formatSlug } from "@/lib/format";
 import Card from "@/components/Card";
 
 export default async function PokemonDetailPage({
@@ -37,6 +38,8 @@ export default async function PokemonDetailPage({
     species.varieties.find((v) => v.is_default) ??
     species.varieties[0];
 
+  const pokemon = await getPokemon(selected.pokemon.name);
+
   const forms = await Promise.all(
     species.varieties.map((v) => getPokemonForm(v.pokemon.name)),
   );
@@ -44,7 +47,7 @@ export default async function PokemonDetailPage({
   const entries = forms.map((form, i) => ({
     key: species.varieties[i].pokemon.name,
     label: getFormName(form, species),
-    id: getPokemonId(species.varieties[i].pokemon.url),
+    id: getIdFromUrl(species.varieties[i].pokemon.url),
   }));
 
   const selectedLabel = entries.find(
@@ -65,7 +68,7 @@ export default async function PokemonDetailPage({
         #{String(species.id).padStart(4, "0")} {getEnglishName(species)}
       </h1>
       <Image
-        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${getPokemonId(selected.pokemon.url)}.png`}
+        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${getIdFromUrl(selected.pokemon.url)}.png`}
         alt={getEnglishName(species)}
         width={256}
         height={256}
@@ -75,6 +78,65 @@ export default async function PokemonDetailPage({
         <p className="mt-2 text-center text-gray-500">{selectedLabel}</p>
       )}
       <div className="mt-8 flex flex-col gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <Card title="Overview">
+            <table className="w-full table-fixed">
+              <colgroup>
+                <col className="w-28" />
+                <col />
+                <col />
+              </colgroup>
+              <tbody>
+                <tr>
+                  <th scope="row" className="py-2 text-left font-semibold">
+                    Type
+                  </th>
+                  {pokemon.types.map((t) => (
+                    <td key={t.type.name} className="py-2">
+                      <Image
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${getIdFromUrl(t.type.url)}.png`}
+                        alt={t.type.name}
+                        width={200}
+                        height={40}
+                        className="h-6 w-auto"
+                      />
+                    </td>
+                  ))}
+                </tr>
+                <tr>
+                  <th scope="row" className="py-2 text-left font-semibold">
+                    Height
+                  </th>
+                  <td colSpan={2} className="py-2">
+                    {formatHeight(pokemon.height)}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" className="py-2 text-left font-semibold">
+                    Weight
+                  </th>
+                  <td colSpan={2} className="py-2">
+                    {formatWeight(pokemon.weight)}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" className="py-2 align-top text-left font-semibold">
+                    Abilities
+                  </th>
+                  <td colSpan={2} className="py-2">
+                    {pokemon.abilities.map((a) => (
+                      <div key={a.ability.name}>
+                        {formatSlug(a.ability.name)}
+                        {a.is_hidden && <span className="text-gray-500"> (hidden)</span>}
+                      </div>
+                    ))}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </Card>
+        </div>
+
         {otherEntries.length > 0 && (
           <Card title="Other Forms">
             <div className="flex flex-wrap justify-center gap-6">

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import {
   getSpeciesList,
   getSpecies,
-  getPokemonId,
+  getIdFromUrl,
   getEnglishName,
   getListedVarieties,
 } from "@/lib/pokeapi";
@@ -20,7 +20,7 @@ export default async function PokemonPage({
   const offset = (page - 1) * 20;
   const data = await getSpeciesList(20, offset);
   const species = await Promise.all(
-    data.results.map((entry) => getSpecies(getPokemonId(entry.url))),
+    data.results.map((entry) => getSpecies(getIdFromUrl(entry.url))),
   );
 
   if (data.results.length === 0) notFound();
@@ -53,7 +53,7 @@ export default async function PokemonPage({
                     {getListedVarieties(s).map((v) => (
                       <Image
                         key={v.pokemon.name}
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getPokemonId(v.pokemon.url)}.png`}
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getIdFromUrl(v.pokemon.url)}.png`}
                         alt={v.pokemon.name}
                         width={48}
                         height={48}
