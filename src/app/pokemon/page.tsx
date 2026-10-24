@@ -1,7 +1,9 @@
 // List page for /pokemon: one row per species, 20 per page, paged with ?page=.
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+
 import {
   getSpeciesList,
   getSpecies,
@@ -11,6 +13,8 @@ import {
 } from "@/lib/pokeapi";
 import { getSpriteUrl } from "@/lib/sprites";
 
+import PokemonTableSkeleton from "@/components/PokemonTableSkeleton";
+
 const PAGE_SIZE = 20;
 
 export default async function PokemonPage({
@@ -19,9 +23,22 @@ export default async function PokemonPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const params = await searchParams;
+
   // Invalid page numbers (abc, 0, -1, 1.5) fall back to page 1.
   const rawPage = params.page ? Number(params.page) : 1;
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
+
+  return (
+    <div className="w-full max-w-5xl mx-auto px-8 pb-8">
+      <h1 className="text-center text-3xl font-bold py-8">All Pokémon</h1>
+      <Suspense key={page} fallback={<PokemonTableSkeleton />}>
+        <PokemonList page={page} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function PokemonList({ page }: { page: number }) {
   const offset = (page - 1) * PAGE_SIZE;
   const data = await getSpeciesList(PAGE_SIZE, offset);
 
@@ -33,8 +50,7 @@ export default async function PokemonPage({
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-8 pb-8">
-      <h1 className="text-center text-3xl font-bold py-8">All Pokémon</h1>
+    <>
       <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         <table className="w-full table-fixed">
           <thead>
@@ -102,6 +118,6 @@ export default async function PokemonPage({
           </Link>
         )}
       </div>
-    </div>
+    </>
   );
 }

@@ -30,7 +30,7 @@ from the PokeAPI/sprites repository on GitHub (that host is allowed in
 
 - `src/app/pokemon/page.tsx`: the list page
 - `src/app/pokemon/[slug]/page.tsx`: the detail page
-- `src/components/`: `Card`, `StatBar`, `GenderBar`, `OverviewCard`, `StatsCard`, `FormsCard`
+- `src/components/`: `Card`, `StatBar`, `GenderBar`, `OverviewCard`, `StatsCard`, `FormsCard`, `PokemonTableSkeleton`
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers, the list-form rule
 - `src/lib/pokemon-detail.ts`: selected form and the other forms for the detail page
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
@@ -56,9 +56,13 @@ from the PokeAPI/sprites repository on GitHub (that host is allowed in
   weight of 0 is a placeholder in the data (Eternamax Eternatus).
 - **Tailwind.** Class names must be complete literal strings. Values that are
   only known at runtime (bar widhts) go through inline `style`.
+- **Loading states.** The detail page uses `[slug]/loading.tsx`. The list page
+  doesn't: a `loading.tsx` doesn't show when only `?page=` changes, so the table
+  sits in a `<Suspense>` keyed by page number, with `PokemonTableSkeleton` as the
+  fallback.
 
 ## To do
 
-- `loading.tsx`, `error.tsx` and a styled 404 page
+- `error.tsx` and a styled 404 page
 - Female sprites for species like Frillish and Unfezant
 - The list table looks empty on the right side
