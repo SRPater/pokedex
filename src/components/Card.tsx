@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+/** A titled section box. This is the shared look of every card on the detail page. */
 export default function Card({
   title,
   children,
