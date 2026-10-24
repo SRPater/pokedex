@@ -10,7 +10,15 @@ import {
   getFormName,
   getGenus,
 } from "@/lib/pokeapi";
-import { STAT_LABELS, MAX_STAT, MAX_TOTAL, formatHeight, formatWeight, formatSlug, COLOR_CLASSES, MAX_CAPTURE_RATE } from "@/lib/display";
+import {
+  MAX_STAT,
+  MAX_TOTAL,
+  MAX_CAPTURE_RATE,
+  getStatLabel,
+  getColorClass,
+  formatHeight,
+  formatWeight,
+  formatSlug } from "@/lib/display";
 import Card from "@/components/Card";
 import StatBar from "@/components/StatBar";
 import GenderBar from "@/components/GenderBar";
@@ -151,9 +159,7 @@ export default async function PokemonDetailPage({
                   <td colSpan={2} className="py-2">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`h-4 w-4 rounded border border-gray-400 ${
-                          COLOR_CLASSES[species.color.name] ?? "bg-gray-300"
-                        }`}
+                        className={`h-4 w-4 rounded border border-gray-400 ${getColorClass(species.color.name)}`}
                         aria-hidden="true"
                       />
                       {formatSlug(species.color.name)}
@@ -191,7 +197,7 @@ export default async function PokemonDetailPage({
                 {pokemon.stats.map((s) => (
                   <tr key={s.stat.name}>
                     <th scope="row" className="py-2 pr-4 text-left font-semibold whitespace-nowrap">
-                      {STAT_LABELS[s.stat.name] ?? formatSlug(s.stat.name)}
+                      {getStatLabel(s.stat.name)}
                     </th>
                     <td className="py-2 text-right">{s.base_stat}</td>
                     <td className="w-full py-2 pl-4">
