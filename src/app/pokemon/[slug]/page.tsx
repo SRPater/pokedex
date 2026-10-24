@@ -8,10 +8,12 @@ import {
   getIdFromUrl,
   getEnglishName,
   getFormName,
+  getGenus,
 } from "@/lib/pokeapi";
-import { STAT_LABELS, MAX_STAT, MAX_TOTAL, formatHeight, formatWeight, formatSlug } from "@/lib/display";
+import { STAT_LABELS, MAX_STAT, MAX_TOTAL, formatHeight, formatWeight, formatSlug, COLOR_CLASSES, MAX_CAPTURE_RATE } from "@/lib/display";
 import Card from "@/components/Card";
 import StatBar from "@/components/StatBar";
+import GenderBar from "@/components/GenderBar";
 
 export default async function PokemonDetailPage({
   params,
@@ -66,9 +68,12 @@ export default async function PokemonDetailPage({
 
   return (
     <div className="w-full max-w-5xl mx-auto px-8 pb-8">
-      <h1 className="text-center text-3xl font-bold py-8">
+      <h1 className="text-center text-3xl font-bold pt-8">
         #{String(species.id).padStart(4, "0")} {getEnglishName(species)}
       </h1>
+      <p className="pb-8 text-center text-lg text-gray-500">
+        {getGenus(species)}
+      </p>
       <Image
         src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${getIdFromUrl(selected.pokemon.url)}.png`}
         alt={getEnglishName(species)}
@@ -84,7 +89,7 @@ export default async function PokemonDetailPage({
           <Card title="Overview">
             <table className="w-full table-fixed">
               <colgroup>
-                <col className="w-28" />
+                <col className="w-36" />
                 <col />
                 <col />
               </colgroup>
@@ -126,12 +131,54 @@ export default async function PokemonDetailPage({
                     Abilities
                   </th>
                   <td colSpan={2} className="py-2">
-                    {pokemon.abilities.map((a) => (
-                      <div key={a.ability.name}>
-                        {formatSlug(a.ability.name)}
-                        {a.is_hidden && <span className="text-gray-500"> (hidden)</span>}
-                      </div>
+                    {pokemon.abilities.map((a, i) => (
+                      <span key={a.ability.name}>
+                        {i > 0 && " | "}
+                        <span
+                          className={a.is_hidden ? "text-gray-500" : undefined}
+                          title={a.is_hidden ? "Hidden ability" : undefined}
+                        >
+                          {formatSlug(a.ability.name)}
+                        </span>
+                      </span>
                     ))}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" className="py-2 text-left font-semibold whitespace-nowrap">
+                    Pokédex Color
+                  </th>
+                  <td colSpan={2} className="py-2">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`h-4 w-4 rounded border border-gray-400 ${
+                          COLOR_CLASSES[species.color.name] ?? "bg-gray-300"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      {formatSlug(species.color.name)}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" className="py-2 text-left font-semibold whitespace-nowrap">
+                    Capture Rate
+                  </th>
+                  <td colSpan={2} className="py-2">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8">{species.capture_rate}</span>
+                      <div className="flex-1">
+                        <StatBar value={species.capture_rate} max={MAX_CAPTURE_RATE} />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" className="py-2 text-left font-semibold whitespace-nowrap">
+                    Gender Ratio
+                  </th>
+                  <td colSpan={2} className="py-2">
+                    <GenderBar genderRate={species.gender_rate} />
                   </td>
                 </tr>
               </tbody>

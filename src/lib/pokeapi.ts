@@ -29,7 +29,16 @@ export type SpeciesListResponse = {
 export type PokemonSpecies = {
   id: number;
   name: string;
+  gender_rate: number;
+  capture_rate: number;
+  color: { name: string };
   names: LocalizedName[];
+  genera: {
+    genus: string;
+    language: {
+      name: string;
+    }
+  }[];
   varieties: {
     is_default: boolean;
     pokemon: {
@@ -118,6 +127,10 @@ export function getIdFromUrl(url: string): number {
 
 export function findEnglish(names: LocalizedName[]): string | undefined {
   return names.find((n) => n.language.name === "en")?.name;
+}
+
+export function getGenus(species: PokemonSpecies): string | undefined {
+  return species.genera.find((g) => g.language.name === "en")?.genus;
 }
 
 export function getEnglishName(species: PokemonSpecies): string {

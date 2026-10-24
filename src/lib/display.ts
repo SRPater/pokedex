@@ -9,6 +9,20 @@ export const STAT_LABELS: Record<string, string> = {
 
 export const MAX_STAT = 200;
 export const MAX_TOTAL = 800;
+export const MAX_CAPTURE_RATE = 255;
+
+export const COLOR_CLASSES: Record<string, string> = {
+  black: "bg-black",
+  blue: "bg-blue-500",
+  brown: "bg-amber-800",
+  gray: "bg-gray-500",
+  green: "bg-green-500",
+  pink: "bg-pink-400",
+  purple: "bg-purple-500",
+  red: "bg-red-500",
+  white: "bg-white",
+  yellow: "bg-yellow-400",
+};
 
 export function formatHeight(decimetres: number): string {
   const metric = (decimetres / 10).toFixed(1);
@@ -22,7 +36,7 @@ export function formatHeight(decimetres: number): string {
 
 export function formatWeight(hectograms: number): string {
   if (hectograms === 0) return "???.? kg | ????.? lbs";
-  
+
   const metric = (hectograms / 10).toFixed(1);
   const imperial = (hectograms * 0.220462).toFixed(1);
 
