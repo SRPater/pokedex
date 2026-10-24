@@ -1,16 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getArtworkUrl } from "@/lib/sprites";
-import Card from "./Card";
 
-export type FormEntry = {
-  /** The variety's slug, used in the ?form= URL parameter. */
-  key: string;
-  /** English display name, e.g. "Mega Charizard X". */
-  label: string;
-  /** Pokémon ID of this form, used for its artwork. */
-  id: number;
-};
+import type { FormEntry } from "@/lib/pokemon-detail";
+import { getArtworkUrl } from "@/lib/sprites";
+
+import Card from "./Card";
 
 /** The species' other forms; each links to the same page with ?form= set. */
 export default function FormsCard({

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
+
 import type { Pokemon, PokemonSpecies } from "@/lib/pokeapi";
 import { getIdFromUrl } from "@/lib/pokeapi";
 import { getTypeIconUrl } from "@/lib/sprites";
@@ -10,6 +11,7 @@ import {
   formatWeight,
   formatSlug,
 } from "@/lib/display";
+
 import Card from "./Card";
 import StatBar from "./StatBar";
 import GenderBar from "./GenderBar";

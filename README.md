@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pokédex
 
-## Getting Started
+A small Next.js (App Router) app built on [PokéAPI](https://pokeapi.co), made
+for learning Next.js. There is no database: all data comes from the API and is
+cached by Next.js for 24 hours.
 
-First, run the development server:
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # then open http://localhost:3000/pokemon
+npm run build   # type-checks every file, handy before committing
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next.js (App Router), TypeScript, Tailwind CSS, Data comes from PokéAPI, images
+from the PokeAPI/sprites repository on GitHub (that host is allowed in
+`next.config.ts` under `images.remotePatterns`).
 
-## Learn More
+## Pages
 
-To learn more about Next.js, take a look at the following resources:
+- `/pokemon`: one row per species in Pokédex order, 20 per page (`?page=`).
+- `/pokemon/[slug]`: detail page. The slug is the species name; an ID such as
+  `/pokemon/25` redirects to `/pokemon/pikachu`. `?form=<variety>` selects which
+  form every card shows (default form when missing or unknown).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout of the code
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/app/pokemon/page.tsx`: the list page
+- `src/app/pokemon/[slug]/page.tsx`: the detail page
+- `src/components/`: `Card`, `StatBar`, `GenderBar`, `OverviewCard`, `StatsCard`, `FormsCard`
+- `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers, the list-form rule
+- `src/lib/pokemon-detail.ts`: selected form and the other forms for the detail page
+- `src/lib/display.ts`: formatting, labels, bar scales, color classes
+- `src/lib/sprites.ts`: image URL builders
 
-## Deploy on Vercel
+## Decisions worth remembering
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Species, not Pokémon.** `/pokemon-species` has one entry per species with
+  the real Pokédex numbers. `/pokemon` lists every form (Megas start at #10001).
+- **List rule.** A row shows the default form plus gender and regional
+  variants (see `KEPT_SUFFIXES` in `pokeapi.ts`). Everything else (Megas,
+  Gigantamax, Primals, Rotom appliances, Origin/Therian forms, cosmetic forms,
+  Totems) only appears on the detail page.
+- **Gender.** A second sprite is shown only when the API has a separate variety
+  (Meowstic). Species whose female differs only by sprite (Frillish, Unfezant)
+  are not handled yet.
+- **Forms.** The selected form lives in the URL. The Forms card lists the other
+  forms, one per distinct display name (male and female Mega Meowstic look the
+  same).
+- **Names.** English display names come from the species `names` and the form
+  `names`. A form without an English name falls back to the species name.
+- **Units.** The API gives height in decimetres and weight in hectograms. A
+  weight of 0 is a placeholder in the data (Eternamax Eternatus).
+- **Tailwind.** Class names must be complete literal strings. Values that are
+  only known at runtime (bar widhts) go through inline `style`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## To do
+
+- `loading.tsx`, `error.tsx` and a styled 404 page
+- Female sprites for species like Frillish and Unfezant
+- The list table looks empty on the right side

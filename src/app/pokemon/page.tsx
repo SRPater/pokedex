@@ -1,14 +1,17 @@
+// List page for /pokemon: one row per species, 20 per page, paged with ?page=.
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import {
   getSpeciesList,
   getSpecies,
   getIdFromUrl,
-  getEnglishName,
   getListedVarieties,
+  getEnglishName,
 } from "@/lib/pokeapi";
 import { getSpriteUrl } from "@/lib/sprites";
+
+const PAGE_SIZE = 20;
 
 export default async function PokemonPage({
   searchParams,
@@ -16,15 +19,18 @@ export default async function PokemonPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const params = await searchParams;
+  // Invalid page numbers (abc, 0, -1, 1.5) fall back to page 1.
   const rawPage = params.page ? Number(params.page) : 1;
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
-  const offset = (page - 1) * 20;
-  const data = await getSpeciesList(20, offset);
+  const offset = (page - 1) * PAGE_SIZE;
+  const data = await getSpeciesList(PAGE_SIZE, offset);
+
+  // Pages past the end of the list are a 404.
+  if (data.results.length === 0) notFound();
+
   const species = await Promise.all(
     data.results.map((entry) => getSpecies(getIdFromUrl(entry.url))),
   );
-
-  if (data.results.length === 0) notFound();
 
   return (
     <div className="w-full max-w-5xl mx-auto px-8 pb-8">
@@ -34,7 +40,7 @@ export default async function PokemonPage({
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-950">
               <th className="w-24 text-left py-4 pl-8 pr-2">#</th>
-              <th className="w-80 text-left py-4">
+              <th className="w-56 text-left py-4">
                 <span className="sr-only">Sprite</span>
               </th>
               <th className="text-left py-4 pl-2 pr-8">Name</th>
@@ -63,6 +69,7 @@ export default async function PokemonPage({
                   </div>
                 </td>
                 <td className="py-2 pl-2 pr-8">
+                  {/* Stretched link: its ::after layer covers the whole (relative) row, so the entire row is clickable. */}
                   <Link
                     href={`/pokemon/${s.name}`}
                     className="after:absolute after:inset-0"
