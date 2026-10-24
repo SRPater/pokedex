@@ -8,6 +8,7 @@ import {
   getEnglishName,
   getListedVarieties,
 } from "@/lib/pokeapi";
+import { getSpriteUrl } from "@/lib/sprites";
 
 export default async function PokemonPage({
   searchParams,
@@ -53,7 +54,7 @@ export default async function PokemonPage({
                     {getListedVarieties(s).map((v) => (
                       <Image
                         key={v.pokemon.name}
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${getIdFromUrl(v.pokemon.url)}.png`}
+                        src={getSpriteUrl(getIdFromUrl(v.pokemon.url))}
                         alt={v.pokemon.name}
                         width={48}
                         height={48}

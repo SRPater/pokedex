@@ -11,17 +11,16 @@ import {
   getGenus,
 } from "@/lib/pokeapi";
 import {
-  MAX_STAT,
-  MAX_TOTAL,
   MAX_CAPTURE_RATE,
-  getStatLabel,
   getColorClass,
   formatHeight,
   formatWeight,
   formatSlug } from "@/lib/display";
+  import { getArtworkUrl, getTypeIconUrl } from "@/lib/sprites";
 import Card from "@/components/Card";
 import StatBar from "@/components/StatBar";
 import GenderBar from "@/components/GenderBar";
+import StatsCard from "@/components/StatsCard";
 
 export default async function PokemonDetailPage({
   params,
@@ -31,7 +30,7 @@ export default async function PokemonDetailPage({
   searchParams: Promise<{ form?: string }>;
 }) {
   const { slug } = await params;
-  const { form } = await searchParams;
+  const { form: formParam } = await searchParams;
 
   let species;
   try {
@@ -45,16 +44,14 @@ export default async function PokemonDetailPage({
   }
 
   const selected =
-    species.varieties.find((v) => v.pokemon.name === form) ??
+    species.varieties.find((v) => v.pokemon.name === formParam) ??
     species.varieties.find((v) => v.is_default) ??
     species.varieties[0];
-
-  const pokemon = await getPokemon(selected.pokemon.name);
-  const totalStats = pokemon.stats.reduce((sum, s) => sum + s.base_stat, 0);
-
-  const forms = await Promise.all(
-    species.varieties.map((v) => getPokemonForm(v.pokemon.name)),
-  );
+  
+  const [pokemon, forms] = await Promise.all([
+    getPokemon(selected.pokemon.name),
+    Promise.all(species.varieties.map((v) => getPokemonForm(v.pokemon.name))),
+  ]);
 
   const entries = forms.map((form, i) => ({
     key: species.varieties[i].pokemon.name,
@@ -83,7 +80,7 @@ export default async function PokemonDetailPage({
         {getGenus(species)}
       </p>
       <Image
-        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${getIdFromUrl(selected.pokemon.url)}.png`}
+        src={getArtworkUrl(getIdFromUrl(selected.pokemon.url))}
         alt={getEnglishName(species)}
         width={256}
         height={256}
@@ -109,7 +106,7 @@ export default async function PokemonDetailPage({
                   {pokemon.types.map((t) => (
                     <td key={t.type.name} className="py-2">
                       <Image
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${getIdFromUrl(t.type.url)}.png`}
+                        src={getTypeIconUrl(getIdFromUrl(t.type.url))}
                         alt={t.type.name}
                         width={200}
                         height={40}
@@ -191,34 +188,7 @@ export default async function PokemonDetailPage({
             </table>
           </Card>
 
-          <Card title="Base Stats">
-            <table className="w-full">
-              <tbody>
-                {pokemon.stats.map((s) => (
-                  <tr key={s.stat.name}>
-                    <th scope="row" className="py-2 pr-4 text-left font-semibold whitespace-nowrap">
-                      {getStatLabel(s.stat.name)}
-                    </th>
-                    <td className="py-2 text-right">{s.base_stat}</td>
-                    <td className="w-full py-2 pl-4">
-                      <StatBar value={s.base_stat} max={MAX_STAT} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-gray-200 dark:border-gray-800">
-                  <th scope="row" className="py-2 text-left font-semibold">
-                    Total
-                  </th>
-                  <td className="py-2 text-right font-semibold">{totalStats}</td>
-                  <td className="w-full py-2 pl-4">
-                    <StatBar value={totalStats} max={MAX_TOTAL} />
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </Card>
+          <StatsCard stats={pokemon.stats} />
         </div>
 
         {otherEntries.length > 0 && (
@@ -231,7 +201,7 @@ export default async function PokemonDetailPage({
                 >
                   <figure className="flex flex-col items-center">
                     <Image
-                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${entry.id}.png`}
+                      src={getArtworkUrl(entry.id)}
                       alt={entry.label}
                       width={128}
                       height={128}
