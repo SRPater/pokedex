@@ -9,8 +9,9 @@ import {
   getEnglishName,
   getFormName,
 } from "@/lib/pokeapi";
-import { formatHeight, formatWeight, formatSlug } from "@/lib/format";
+import { STAT_LABELS, MAX_STAT, MAX_TOTAL, formatHeight, formatWeight, formatSlug } from "@/lib/display";
 import Card from "@/components/Card";
+import StatBar from "@/components/StatBar";
 
 export default async function PokemonDetailPage({
   params,
@@ -39,6 +40,7 @@ export default async function PokemonDetailPage({
     species.varieties[0];
 
   const pokemon = await getPokemon(selected.pokemon.name);
+  const totalStats = pokemon.stats.reduce((sum, s) => sum + s.base_stat, 0);
 
   const forms = await Promise.all(
     species.varieties.map((v) => getPokemonForm(v.pokemon.name)),
@@ -133,6 +135,35 @@ export default async function PokemonDetailPage({
                   </td>
                 </tr>
               </tbody>
+            </table>
+          </Card>
+
+          <Card title="Base Stats">
+            <table className="w-full">
+              <tbody>
+                {pokemon.stats.map((s) => (
+                  <tr key={s.stat.name}>
+                    <th scope="row" className="py-2 pr-4 text-left font-semibold whitespace-nowrap">
+                      {STAT_LABELS[s.stat.name] ?? formatSlug(s.stat.name)}
+                    </th>
+                    <td className="py-2 text-right">{s.base_stat}</td>
+                    <td className="w-full py-2 pl-4">
+                      <StatBar value={s.base_stat} max={MAX_STAT} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-gray-200 dark:border-gray-800">
+                  <th scope="row" className="py-2 text-left font-semibold">
+                    Total
+                  </th>
+                  <td className="py-2 text-right font-semibold">{totalStats}</td>
+                  <td className="w-full py-2 pl-4">
+                    <StatBar value={totalStats} max={MAX_TOTAL} />
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </Card>
         </div>
