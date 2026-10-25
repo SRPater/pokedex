@@ -9,15 +9,17 @@ const STYLES =
 /** A navigation link that looks like a button. */
 export function ButtonLink({
   href,
+  title = "",
   children,
   className = "",
 }: {
   href: string;
+  title?: string;
   children: ReactNode;
   className?: string;
 }) {
   return (
-    <Link href={href} className={`${STYLES} ${className}`}>
+    <Link href={href} title={title} className={`${STYLES} ${className}`}>
       {children}
     </Link>
   );

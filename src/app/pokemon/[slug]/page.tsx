@@ -4,10 +4,11 @@
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 
-import { getSpecies, PokeApiError, getEnglishName, getGenus } from "@/lib/pokeapi";
+import { getSpecies, PokeApiError, getNeighbours, getEnglishName, getGenus } from "@/lib/pokeapi";
 import { getPokemonDetail } from "@/lib/pokemon-detail";
 import { getArtworkUrl } from "@/lib/sprites";
 
+import PokemonNav from "@/components/PokemonNav";
 import OverviewCard from "@/components/OverviewCard";
 import StatsCard from "@/components/StatsCard";
 import FormsCard from "@/components/FormsCard";
@@ -37,11 +38,17 @@ export default async function PokemonDetailPage({
     redirect(`/pokemon/${species.name}`);
   }
 
-  const { pokemon, selectedId, selectedLabel, otherEntries } =
-    await getPokemonDetail(species, formParam);
+  const [
+    { pokemon, selectedId, selectedLabel, otherEntries },
+    { previous, next },
+  ] = await Promise.all([
+    getPokemonDetail(species, formParam),
+    getNeighbours(species),
+  ]);
 
   return (
     <div className="w-full max-w-5xl mx-auto px-8 pb-8">
+      <PokemonNav previous={previous} next={next} />
       <h1 className="text-center text-3xl font-bold pt-8">
         #{String(species.id).padStart(4, "0")} {getEnglishName(species)}
       </h1>

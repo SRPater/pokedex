@@ -80,6 +80,25 @@ export function getSpecies(slug: number | string): Promise<PokemonSpecies> {
   return fetchFromApi<PokemonSpecies>(`pokemon-species/${slug}`);
 }
 
+/**
+ * The species before and after `species` in Pokédex order, wrapping around:
+ * the one before #1 is the last species, and the one after the last is #1.
+ */
+export async function getNeighbours(
+  species: PokemonSpecies,
+): Promise<{ previous: PokemonSpecies; next: PokemonSpecies }> {
+  const { count } = (await getSpeciesList(1, 0));
+  const previousId = species.id === 1 ? count : species.id - 1;
+  const nextId = species.id === count ? 1 : species.id + 1;
+
+  const [previous, next] = await Promise.all([
+    getSpecies(previousId),
+    getSpecies(nextId),
+  ]);
+
+  return { previous, next };
+}
+
 export function getPokemonForm(name: string): Promise<PokemonForm> {
   return fetchFromApi<PokemonForm>(`pokemon-form/${name}`);
 }
