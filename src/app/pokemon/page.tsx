@@ -14,6 +14,7 @@ import {
 import { getSpriteUrl } from "@/lib/sprites";
 
 import PokemonTableSkeleton from "@/components/PokemonTableSkeleton";
+import { ButtonLink } from "@/components/Button";
 
 const PAGE_SIZE = 20;
 
@@ -101,21 +102,15 @@ async function PokemonList({ page }: { page: number }) {
 
       <div className="flex justify-between mt-6">
         {page > 1 && (
-          <Link
-            href={`/pokemon?page=${page - 1}`}
-            className="rounded-lg px-4 py-2 border border-gray-200 bg-gray-50 hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-800"
-          >
+          <ButtonLink href={`/pokemon?page=${page - 1}`}>
             Previous page
-          </Link>
+          </ButtonLink>
         )}
 
         {data.next && (
-          <Link
-            href={`/pokemon?page=${page + 1}`}
-            className="ml-auto rounded-lg px-4 py-2 border border-gray-200 bg-gray-50 hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-800"
-          >
+          <ButtonLink href={`/pokemon?page=${page + 1}`} className="ml-auto">
             Next page
-          </Link>
+          </ButtonLink>
         )}
       </div>
     </>

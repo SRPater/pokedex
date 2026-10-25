@@ -63,6 +63,9 @@ from the PokeAPI/sprites repository on GitHub (that host is allowed in
   fallback.
 - **Error handling.** `PokeApiError` carries the HTTP status, only a 404 from PokéAPI
   becomes a not-found page, and everything else goes to `error.tsx`.
+- **Colour pairing.** We use `gray-[xxx]` colours from Tailwind for surfaces, stripes
+  and borders. For surfaces we use `gray-50` for light mode and `gray-950` for dark
+  mode. For stripes use `100` and `900` and for borders and hover use `200` and `800`.
 
 ## To do
 

@@ -1,5 +1,5 @@
 import StatusMessage from "@/components/StatusMessage";
-import ButtonLink from "@/components/ButtonLink";
+import { ButtonLink } from "@/components/Button";
 
 export default function NotFound() {
   return (
