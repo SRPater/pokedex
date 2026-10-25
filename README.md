@@ -30,7 +30,8 @@ from the PokeAPI/sprites repository on GitHub (that host is allowed in
 
 - `src/app/pokemon/page.tsx`: the list page
 - `src/app/pokemon/[slug]/page.tsx`: the detail page
-- `src/components/`: `Card`, `StatBar`, `GenderBar`, `OverviewCard`, `StatsCard`, `FormsCard`, `PokemonTableSkeleton`
+- `src/components/`: `Card`, `StatBar`, `GenderBar`, `OverviewCard`, `StatsCard`, `FormsCard`,
+  `PokemonTableSkeleton`, `StatusMessage`, `ButtonLink`
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers, the list-form rule
 - `src/lib/pokemon-detail.ts`: selected form and the other forms for the detail page
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
@@ -60,9 +61,10 @@ from the PokeAPI/sprites repository on GitHub (that host is allowed in
   doesn't: a `loading.tsx` doesn't show when only `?page=` changes, so the table
   sits in a `<Suspense>` keyed by page number, with `PokemonTableSkeleton` as the
   fallback.
+- **Error handling.** `PokeApiError` carries the HTTP status, only a 404 from PokéAPI
+  becomes a not-found page, and everything else goes to `error.tsx`.
 
 ## To do
 
-- `error.tsx` and a styled 404 page
 - Female sprites for species like Frillish and Unfezant
 - The list table looks empty on the right side

@@ -48,6 +48,17 @@ export type Pokemon = {
 // This also keeps us polite towards PokéAPI, which asks for local caching.
 const REVALIDATE_SECONDS = 60 * 60 * 24;
 
+/** Thrown for any non-OK PokéAPI response; `status` is the HTTP status code. */
+export class PokeApiError extends Error {
+  status: number;
+
+  constructor(status: number, path: string) {
+    super(`PokéAPI request failed (${status}): ${path}`);
+    this.name = "PokeApiError";
+    this.status = status;
+  }
+}
+
 /**
  * Shared fetch for all PokéAPI endpoints. `T` is the response type the caller
  * expects; it isn't verified at runtime, so it must match the real API.
@@ -57,7 +68,7 @@ async function fetchFromApi<T>(path: string): Promise<T> {
     next: { revalidate: REVALIDATE_SECONDS },
   });
 
-  if (!res.ok) throw new Error(`PokéAPI request failed (${res.status}): ${path}`);
+  if (!res.ok) throw new PokeApiError(res.status, path);
   return res.json();
 }
 

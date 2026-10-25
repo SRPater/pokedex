@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 
-import { getSpecies, getEnglishName, getGenus } from "@/lib/pokeapi";
+import { getSpecies, PokeApiError, getEnglishName, getGenus } from "@/lib/pokeapi";
 import { getPokemonDetail } from "@/lib/pokemon-detail";
 import { getArtworkUrl } from "@/lib/sprites";
 
@@ -24,14 +24,12 @@ export default async function PokemonDetailPage({
   const { form: formParam } = await searchParams;
 
   let species;
-
-  // getSpecies throws for unknown slugs, which becomes the 404 page. notFound()
-  // and redirect() work by throwing, so they must stay outside the try block,
-  // or the catch would swallow them.
   try {
     species = await getSpecies(slug);
-  } catch {
-    notFound();
+  } catch (error) {
+    // Only a 404 from PokéAPI means "no such Pokémon"; anything else is a failure.
+    if (error instanceof PokeApiError && error.status === 404) notFound();
+    throw error;
   }
 
   if (slug !== species.name) {
