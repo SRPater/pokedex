@@ -10,6 +10,7 @@ import {
   getIdFromUrl,
   getListedVarieties,
   getEnglishName,
+  getTypeLookup,
 } from "@/lib/pokeapi";
 import { getSpriteUrl } from "@/lib/sprites";
 

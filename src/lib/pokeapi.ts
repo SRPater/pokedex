@@ -44,6 +44,18 @@ export type Pokemon = {
   stats: { base_stat: number; stat: NamedResource }[];
 };
 
+export type PokemonTypeData = {
+  id: number;
+  name: string;
+  pokemon: { slot: number; pokemon: NamedResource }[];
+};
+
+/** One type of a Pokémon, with the ID that its icon URL needs. */
+export type PokemonTypeInfo = {
+  name: string;
+  id: number;
+};
+
 // Pokémon data almost never changes, so cache every response for a day.
 // This also keeps us polite towards PokéAPI, which asks for local caching.
 const REVALIDATE_SECONDS = 60 * 60 * 24;
@@ -107,6 +119,10 @@ export function getPokemon(name: string): Promise<Pokemon> {
   return fetchFromApi<Pokemon>(`pokemon/${name}`);
 }
 
+export function getType(name: string): Promise<PokemonTypeData> {
+  return fetchFromApi<PokemonTypeData>(`type/${name}`);
+}
+
 /** Extracts the trailing ID from a PokéAPI URL, e.g. ".../pokemon/25/" -> 25. */
 export function getIdFromUrl(url: string): number {
   const trimmedUrl = url.endsWith("/") ? url.slice(0, -1) : url;
@@ -165,4 +181,31 @@ export function getListedVarieties(species: PokemonSpecies) {
       (v.is_default ||
         KEPT_SUFFIXES.some((suffix) => v.pokemon.name.endsWith(suffix))),
   );
+}
+
+// The 18 regular types. Stellar, unknown an shadow are left out on purpose:
+// they aren't types of ordinary Pokémon.
+const TYPE_NAMES = [
+  "normal", "fighting", "flying", "poison", "ground", "rock",
+  "bug", "ghost", "steel", "fire", "water", "grass",
+  "electric", "psychic", "ice", "dragon", "dark", "fairy",
+];
+
+/** Maps a Pokémon (or form) name to its types, primary type first. */
+export async function getTypeLookup(): Promise<Map<string, PokemonTypeInfo[]>> {
+  // Fetch all 18 types at the same time.
+  const types = await Promise.all(TYPE_NAMES.map((name) => getType(name)));
+
+  // Put each type at the position its slot says (slot 1 -> index 0, slot 2 -> index 1),
+  // so every list ends up with the primary type first, whatever order we meet them in.
+  const lookup = new Map<string, PokemonTypeInfo[]>();
+  for (const type of types) {
+    for (const entry of type.pokemon) {
+      const list = lookup.get(entry.pokemon.name) ?? [];
+      list[entry.slot - 1] = { name: type.name, id: type.id };
+      lookup.set(entry.pokemon.name, list);
+    }
+  }
+
+  return lookup;
 }
