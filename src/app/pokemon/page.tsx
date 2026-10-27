@@ -11,6 +11,7 @@ import {
   getEnglishName,
   getTypeLookup,
   getDefaultFormName,
+  getGenus,
 } from "@/lib/pokeapi";
 import { getSpriteUrl, getSmallTypeIconUrl } from "@/lib/sprites";
 
@@ -60,12 +61,13 @@ async function PokemonList({ page }: { page: number }) {
         <table className="w-full table-fixed">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-950">
-              <th className="w-24 text-left py-4 pl-8 pr-2">#</th>
-              <th className="w-56 text-left py-4">
+              <th className="w-16 md:w-24 text-left py-4 pl-4 md:pl-8 pr-2">#</th>
+              <th className="w-20 md:w-56 text-left py-4">
                 <span className="sr-only">Sprite</span>
               </th>
-              <th className="text-left py-4 pl-2 pr-8">Name</th>
-              <th className="w-32 text-left py-4">Type</th>
+              <th className="text-left py-4 pl-2 pr-2 md:pr-8">Name</th>
+              <th className="hidden md:table-cell text-left py-4">Category</th>
+              <th className="hidden md:table-cell w-32 text-left py-4">Type</th>
             </tr>
           </thead>
           <tbody>
@@ -74,7 +76,7 @@ async function PokemonList({ page }: { page: number }) {
                 key={s.name}
                 className="relative bg-gray-50 even:bg-gray-100 hover:bg-gray-200 dark:bg-gray-950 dark:even:bg-gray-900 dark:hover:bg-gray-800"
               >
-                <td className="py-2 pl-8 pr-2">
+                <td className="py-2 pl-4 md:pl-8 pr-2">
                   #{String(s.id).padStart(4, "0")}
                 </td>
                 <td className="p-2">
@@ -87,7 +89,7 @@ async function PokemonList({ page }: { page: number }) {
                     />
                   </div>
                 </td>
-                <td className="py-2 pl-2 pr-8">
+                <td className="py-2 pl-2 pr-2 md:pr-8">
                   {/* Stretched link: its ::after layer covers the whole (relative) row, so the entire row is clickable. */}
                   <Link
                     href={`/pokemon/${s.name}`}
@@ -96,7 +98,8 @@ async function PokemonList({ page }: { page: number }) {
                     {getEnglishName(s)}
                   </Link>
                 </td>
-                <td className="p-2">
+                <td className="hidden md:table-cell py-2 pr-4 text-gray-500">{getGenus(s)}</td>
+                <td className="hidden md:table-cell p-2">
                   <div className="flex gap-2">
                     {(typeLookup.get(getDefaultFormName(s)) ?? []).map((t) => (
                       <Image
