@@ -153,34 +153,10 @@ export function getFormName(
   return findEnglish(form.names) ?? getEnglishName(species);
 }
 
-// Variety name endings that count as gender or regional forms (see
-// getListedVarieties). The last two are special cases: Galarian Darmanitan
-// and Paldean Tauros don't end in a plain region suffix.
-const KEPT_SUFFIXES = [
-  "-male",
-  "-female",
-  "-alola",
-  "-galar",
-  "-hisui",
-  "-paldea",
-  "-galar-standard", // Galarian Darmanitan
-  "-breed",          // Paldean Tauros
-];
-
-/**
- * Which forms appear in the list rows: the default form, plus gender and
- * regional variants. Everything else (Megas, Gigantamax, Rotom appliances,
- * Origin/Therian, cosmetic forms) is shown on the detail page only.
- * Totem forms are excluded explicitly, since e.g. "raticate-totem-alola"
- * would otherwise match the "-alola" suffix.
- */
-export function getListedVarieties(species: PokemonSpecies) {
-  return species.varieties.filter(
-    (v) =>
-      !v.pokemon.name.includes("-totem") &&
-      (v.is_default ||
-        KEPT_SUFFIXES.some((suffix) => v.pokemon.name.endsWith(suffix))),
-  );
+/** Name of the species' default form, e.g. "meowstic-male" for Meowstic. */
+export function getDefaultFormName(species: PokemonSpecies): string {
+  const variety = species.varieties.find((v) => v.is_default) ?? species.varieties[0];
+  return variety.pokemon.name;
 }
 
 // The 18 regular types. Stellar, unknown an shadow are left out on purpose:

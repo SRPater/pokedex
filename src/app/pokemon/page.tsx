@@ -8,11 +8,11 @@ import {
   getSpeciesList,
   getSpecies,
   getIdFromUrl,
-  getListedVarieties,
   getEnglishName,
   getTypeLookup,
+  getDefaultFormName,
 } from "@/lib/pokeapi";
-import { getSpriteUrl } from "@/lib/sprites";
+import { getSpriteUrl, getSmallTypeIconUrl } from "@/lib/sprites";
 
 import PokemonTableSkeleton from "@/components/PokemonTableSkeleton";
 import { ButtonLink } from "@/components/Button";
@@ -42,7 +42,10 @@ export default async function PokemonPage({
 
 async function PokemonList({ page }: { page: number }) {
   const offset = (page - 1) * PAGE_SIZE;
-  const data = await getSpeciesList(PAGE_SIZE, offset);
+  const [data, typeLookup] = await Promise.all([
+    getSpeciesList(PAGE_SIZE, offset),
+    getTypeLookup(),
+  ]);
 
   // Pages past the end of the list are a 404.
   if (data.results.length === 0) notFound();
@@ -62,6 +65,7 @@ async function PokemonList({ page }: { page: number }) {
                 <span className="sr-only">Sprite</span>
               </th>
               <th className="text-left py-4 pl-2 pr-8">Name</th>
+              <th className="w-32 text-left py-4">Type</th>
             </tr>
           </thead>
           <tbody>
@@ -75,15 +79,12 @@ async function PokemonList({ page }: { page: number }) {
                 </td>
                 <td className="p-2">
                   <div className="flex justify-center">
-                    {getListedVarieties(s).map((v) => (
-                      <Image
-                        key={v.pokemon.name}
-                        src={getSpriteUrl(getIdFromUrl(v.pokemon.url))}
-                        alt={v.pokemon.name}
-                        width={48}
-                        height={48}
-                      />
-                    ))}
+                    <Image
+                      src={getSpriteUrl(s.id)}
+                      alt={getEnglishName(s)}
+                      width={48}
+                      height={48}
+                    />
                   </div>
                 </td>
                 <td className="py-2 pl-2 pr-8">
@@ -94,6 +95,20 @@ async function PokemonList({ page }: { page: number }) {
                   >
                     {getEnglishName(s)}
                   </Link>
+                </td>
+                <td className="p-2">
+                  <div className="flex gap-2">
+                    {(typeLookup.get(getDefaultFormName(s)) ?? []).map((t) => (
+                      <Image
+                        key={t.name}
+                        src={getSmallTypeIconUrl(t.id)}
+                        alt={t.name}
+                        width={60}
+                        height={60}
+                        className="h-10 w-10 rounded-full"
+                      />
+                    ))}
+                  </div>
                 </td>
               </tr>
             ))}

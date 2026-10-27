@@ -17,3 +17,8 @@ export function getArtworkUrl(id: number): string {
 export function getTypeIconUrl(id: number): string {
   return `${SPRITES_BASE}/types/generation-ix/scarlet-violet/${id}.png`;
 }
+
+/** Small square type icon (60x60), Scarlet/Violet style, for compact places like the list. */
+export function getSmallTypeIconUrl(id: number): string {
+  return `${SPRITES_BASE}/types/generation-ix/scarlet-violet/small/${id}.png`;
+}
