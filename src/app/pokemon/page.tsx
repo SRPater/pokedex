@@ -17,7 +17,6 @@ import { getSpriteUrl, getSmallTypeIconUrl } from "@/lib/sprites";
 
 import PokemonTableSkeleton from "@/components/PokemonTableSkeleton";
 import { ButtonLink } from "@/components/Button";
-import { getColorClass } from "@/lib/display";
 
 const PAGE_SIZE = 20;
 
@@ -77,11 +76,7 @@ async function PokemonList({ page }: { page: number }) {
                 key={s.name}
                 className="relative bg-gray-50 even:bg-gray-100 hover:bg-gray-200 dark:bg-gray-950 dark:even:bg-gray-900 dark:hover:bg-gray-800"
               >
-                <td className="relative py-2 pl-4 md:pl-8 pr-2">
-                  <span
-                    className={`absolute inset-y-0 left-0 w-1 ${getColorClass(s.color.name)}`}
-                    aria-hidden="true"
-                  />
+                <td className="py-2 pl-4 md:pl-8 pr-2">
                   #{String(s.id).padStart(4, "0")}
                 </td>
                 <td className="p-2">
