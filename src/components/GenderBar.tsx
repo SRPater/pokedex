@@ -13,8 +13,8 @@ export default function GenderBar({ genderRate }: { genderRate: number }) {
   const male = 100 - female;
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="w-12">
+    <div className="flex items-center gap-2 md:gap-3">
+      <span className="text-sm md:w-12 md:text-base">
         {male}%<span className="sr-only"> male</span>
       </span>
       <div
@@ -24,7 +24,7 @@ export default function GenderBar({ genderRate }: { genderRate: number }) {
         <div className="bg-blue-500" style={{ width: `${male}%` }} />
         <div className="bg-pink-400" style={{ width: `${female}%` }} />
       </div>
-      <span className="w-12 text-right">
+      <span className="text-sm text-right md:w-12 md:text-base">
         {female}%<span className="sr-only"> female</span>
       </span>
     </div>

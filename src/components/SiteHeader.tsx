@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function SiteHeader() {
   return (
     <header className="border-b border-gray-200 dark:border-gray-800">
-      <nav className="mx-auto flex w-full max-w-5xl items-center gap-6 px-8 py-4">
+      <nav className="mx-auto flex w-full max-w-5xl items-center gap-6 px-4 md:px-8 py-4">
         <Link href="/" className="text-lg font-bold">
           Pokédex
         </Link>

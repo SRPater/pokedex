@@ -32,7 +32,7 @@ export default async function PokemonPage({
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-8 pb-8">
+    <div className="w-full max-w-5xl mx-auto px-4 md:px-8 pb-8">
       <h1 className="text-center text-3xl font-bold py-8">All Pokémon</h1>
       <Suspense key={page} fallback={<PokemonTableSkeleton />}>
         <PokemonList page={page} />
