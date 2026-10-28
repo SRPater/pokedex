@@ -21,6 +21,8 @@ export type PokemonSpecies = {
   name: string;
   /** Eighths of this species that are female (0 to 8), or -1 if genderless. */
   gender_rate: number;
+  /** True when males and females look different (the female sprite then exists). */
+  has_gender_differences: boolean;
   /** 3 (hardest to catch) to 255 (easiest). */
   capture_rate: number;
   color: NamedResource;
