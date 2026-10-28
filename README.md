@@ -12,6 +12,9 @@ npm run dev     # then open http://localhost:3000/pokemon
 npm run build   # type-checks every file, handy before committing
 ```
 
+If a Tailwind class seems to do nothing in dev, hard-reload (Ctrl+Shift+R)
+before debugging.
+
 
 ## Stack
 
@@ -22,7 +25,9 @@ from the PokeAPI/sprites repository on GitHub (that host is allowed in
 ## Pages
 
 - `/`: landing page with a short intro and a button to the list.
-- `/pokemon`: one row per species in Pokédex order, 20 per page (`?page=`).
+- `/pokemon`: one row per species in Pokédex order, 20 per page (`?page=`). Each
+  row shows the number, the default form's sprite, the name, the category and
+  the type icons; the category and types are hidden below the `md` breakpoint.
 - `/pokemon/[slug]`: detail page. The slug is the species name; an ID such as
   `/pokemon/25` redirects to `/pokemon/pikachu`. `?form=<variety>` selects which
   form every card shows (default form when missing or unknown). Previous/next
@@ -78,8 +83,33 @@ the whole layout.
   (cards, table rows, buttons), `100`/`900` for stripes and `200`/`800` for
   borders and hover. Everything button-shaped shares one style in
   `components/Button.tsx`.
+- **Titles.** The root layout sets a title template (`%s | Pokédex`). The list
+  page exports a static title, and the detail page a `generateMetadata` that
+  uses the species' English name; unknown slugs keep the default title.
+- **Varieties vs. forms.** In PokéAPI a species has varieties (the Pokémon
+  entries, with types, stats and so on), and each variety has forms
+  (`pokemon-form`), which we only use for display names. They don't always share
+  a name (the variety `koraidon` has the form `koraidon-apex-build`), so
+  `getPokemonForm` returns `null` on a 404 and the label falls back to the
+  species name.
+- **Small screens.** Cards and page padding shrink below `md` (`p-4 md:p-8`,
+  `px-4 md:px-8`), and the gender bar drops its fixed label widths there.
 
 ## To do
 
-- Female sprites for species like Frillish and Unfezant
-- The list table looks empty on the right side
+- Forms redesign:
+  - The Other Forms card shows real alternate forms only (Megas, Gigantamax,
+    regional forms, battle forms like Rotom's appliances). Cosmetic forms (all of
+    Pikachu's) are dropped, and Koraidon and Miraidon keep just their default form.
+  - Gender gets its own male/female switch next to the big artwork. The URL
+    carries `?form=` and `?gender=`, and varieties are grouped by form with the
+    gender part removed (the two Mega Meowstics become one form with two
+    genders). `has_gender_differences` decides whether the switch is shown;
+    for species like Frillish the switch only swaps the picture.
+  - Female pictures only exist in the Pokémon HOME style
+    (`sprites/pokemon/other/home/female/{id}.png`), so the big artwork may move
+    to HOME. Some cosmetic forms have no HOME render.
+  - Still open: how to decide which species' extra forms count as cosmetic (a
+    hand-kept list or a rule), and the label for varieties without a form of
+    their own.
+- Deploy, once the forms work is done.
