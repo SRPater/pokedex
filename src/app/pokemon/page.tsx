@@ -20,6 +20,10 @@ import { ButtonLink } from "@/components/Button";
 
 const PAGE_SIZE = 20;
 
+export const metadata = {
+  title: "All Pokémon",
+};
+
 export default async function PokemonPage({
   searchParams,
 }: {

@@ -3,6 +3,7 @@
 // card shows; missing or unknown values mean the default form.
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
 
 import { getSpecies, PokeApiError, getNeighbours, getEnglishName, getGenus } from "@/lib/pokeapi";
 import { getPokemonDetail } from "@/lib/pokemon-detail";
@@ -12,6 +13,25 @@ import PokemonNav from "@/components/PokemonNav";
 import OverviewCard from "@/components/OverviewCard";
 import StatsCard from "@/components/StatsCard";
 import FormsCard from "@/components/FormsCard";
+
+// Tab title for /pokemon/[slug, e.g. "Charizard | Pokédex" (the " | Pokédex"
+// comes from the template in the root layout).
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata>{
+  const { slug } = await params;
+
+  try {
+    const species = await getSpecies(slug);
+    return { title: getEnglishName(species) };
+  } catch {
+    // Unknown slug or API failure: keep the default title. The page itself
+    // decides between the 404 and the error page.
+    return {};
+  }
+}
 
 export default async function PokemonDetailPage({
   params,
