@@ -111,8 +111,15 @@ export async function getNeighbours(
   return { previous, next };
 }
 
-export function getPokemonForm(name: string): Promise<PokemonForm> {
-  return fetchFromApi<PokemonForm>(`pokemon-form/${name}`);
+export async function getPokemonForm(name: string): Promise<PokemonForm | null> {
+  try {
+    return await fetchFromApi<PokemonForm>(`pokemon-form/${name}`);
+  } catch (error) {
+    // A variety's form can have a different name (e.g. "koraidon" has the
+    // form "koraidon-apex-build"), so a 404 here just means "no form of that name".
+    if (error instanceof PokeApiError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 export function getPokemon(name: string): Promise<Pokemon> {
@@ -147,10 +154,10 @@ export function getGenus(species: PokemonSpecies): string | undefined {
  * own (e.g. Charizard), so we fall back to the species' display name.
  */
 export function getFormName(
-  form: PokemonForm,
+  form: PokemonForm | null,
   species: PokemonSpecies,
 ): string {
-  return findEnglish(form.names) ?? getEnglishName(species);
+  return findEnglish(form?.names ?? []) ?? getEnglishName(species);
 }
 
 /** Name of the species' default form, e.g. "meowstic-male" for Meowstic. */
