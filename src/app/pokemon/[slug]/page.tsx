@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 
 import { getSpecies, PokeApiError, getNeighbours, getEnglishName, getGenus, getDefaultFormName } from "@/lib/pokeapi";
 import { getPokemonDetail, isFemale } from "@/lib/pokemon-detail";
-import { getArtworkUrl, getRenderUrl } from "@/lib/sprites";
+import { getRenderUrl } from "@/lib/sprites";
 
 import PokemonNav from "@/components/PokemonNav";
 import OverviewCard from "@/components/OverviewCard";
