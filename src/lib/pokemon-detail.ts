@@ -5,6 +5,7 @@ import {
   getIdFromUrl,
   type Pokemon,
   type PokemonSpecies,
+  getDefaultFormName,
 } from "./pokeapi";
 
 export type FormEntry = {
@@ -29,6 +30,27 @@ export type PokemonDetail = {
   selectedName: string;
   /** The other gender's variety, when the male/female switch applies. */
   genderCounterpart: string | null;
+};
+
+// Species whose extra forms are mostly cosmetic or in-game modes. For these, the
+// Other Forms card offers only the default form plus the varieties listed here.
+// Add species as you spot them.
+const LIMITED_FORMS: Record<string, string[]> = {
+  pikachu: ["pikachu-gmax"],
+  eevee: ["eevee-gmax"],
+  koraidon: [],
+  miraidon: [],
+};
+
+// Species where the Other Forms card should show a specific set of forms for each
+// selected form (for example Urshifu's two styles, each with its own Gigantamax).
+const FORM_LINKS: Record<string, Record<string, string[]>> = {
+  urshifu: {
+    "urshifu-single-strike": ["urshifu-rapid-strike", "urshifu-single-strike-gmax"],
+    "urshifu-rapid-strike": ["urshifu-single-strike", "urshifu-rapid-strike-gmax"],
+    "urshifu-single-strike-gmax": ["urshifu-single-strike"],
+    "urshifu-rapid-strike-gmax": ["urshifu-rapid-strike"],
+  },
 };
 
 /**
@@ -66,17 +88,19 @@ export async function getPokemonDetail(
   )?.label;
 
   const selectedGender = getGender(selected.pokemon.name);
-  const filteredEntries = entries.filter(
+  const allowed = LIMITED_FORMS[species.name];
+  const defaultName = getDefaultFormName(species);
+  const links = FORM_LINKS[species.name]?.[selected.pokemon.name];
+  const otherEntries = entries.filter(
     (entry) => {
       const gender = getGender(entry.key);
       return (
         entry.key !== selected.pokemon.name &&
-        (gender === null || gender === selectedGender)
+        (gender === null || gender === selectedGender) &&
+        (!allowed || entry.key === defaultName || allowed.includes(entry.key)) &&
+        (!links || links.includes(entry.key))
       );
     }
-  );
-  const otherEntries = filteredEntries.filter(
-    (entry, i) => filteredEntries.findIndex((e) => e.label === entry.label) === i,
   );
 
   return {

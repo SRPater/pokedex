@@ -1,28 +1,26 @@
 import Link from "next/link";
-import { isFemale } from "@/lib/pokemon-detail";
 
 /** Male/female switch under the artwork, for species with gender varieties. */
 export default function GenderSwitch({
-  speciesName,
-  selectedName,
-  counterpart,
+  selected,
+  maleHref,
+  femaleHref,
 }: {
-  speciesName: string;
-  selectedName: string;
-  counterpart: string;
+  selected: "male" | "female";
+  maleHref: string;
+  femaleHref: string;
 }) {
   // Work out which variety is the male one and which the female one.
-  const selectedIsFemale = isFemale(selectedName);
   const options = [
-    { symbol: "♂", label: "Male", name: selectedIsFemale ? counterpart : selectedName },
-    { symbol: "♀", label: "Female", name: selectedIsFemale ? selectedName : counterpart },
+    { symbol: "♂", label: "Male", href: maleHref, isSelected: selected === "male" },
+    { symbol: "♀", label: "Female", href: femaleHref, isSelected: selected === "female" },
   ];
 
   return (
     <div className="mt-4 flex justify-center">
       <div className="inline-flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-950">
         {options.map((option) =>
-          option.name === selectedName ? (
+          option.isSelected ? (
             <span
               key={option.label}
               aria-current="true"
@@ -34,7 +32,7 @@ export default function GenderSwitch({
           ) : (
             <Link
               key={option.label}
-              href={`/pokemon/${speciesName}?form=${option.name}`}
+              href={option.href}
               className="rounded-md px-3 py-1 hover:bg-gray-100 dark:hover:bg-gray-900"
             >
               {option.symbol}
