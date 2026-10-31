@@ -7,12 +7,13 @@ import type { Metadata } from "next";
 
 import { getSpecies, PokeApiError, getNeighbours, getEnglishName, getGenus } from "@/lib/pokeapi";
 import { getPokemonDetail } from "@/lib/pokemon-detail";
-import { getArtworkUrl } from "@/lib/sprites";
+import { getArtworkUrl, getRenderUrl } from "@/lib/sprites";
 
 import PokemonNav from "@/components/PokemonNav";
 import OverviewCard from "@/components/OverviewCard";
 import StatsCard from "@/components/StatsCard";
 import FormsCard from "@/components/FormsCard";
+import GenderSwitch from "@/components/GenderSwitch";
 
 // Tab title for /pokemon/[slug, e.g. "Charizard | Pokédex" (the " | Pokédex"
 // comes from the template in the root layout).
@@ -59,7 +60,7 @@ export default async function PokemonDetailPage({
   }
 
   const [
-    { pokemon, selectedId, selectedLabel, otherEntries },
+    { pokemon, selectedId, selectedLabel, otherEntries, selectedName, genderCounterpart },
     { previous, next },
   ] = await Promise.all([
     getPokemonDetail(species, formParam),
@@ -76,12 +77,19 @@ export default async function PokemonDetailPage({
         {getGenus(species)}
       </p>
       <Image
-        src={getArtworkUrl(selectedId)}
+        src={getRenderUrl(selectedId)}
         alt={getEnglishName(species)}
         width={256}
         height={256}
         className="mx-auto"
       />
+      {genderCounterpart && (
+        <GenderSwitch
+          speciesName={species.name}
+          selectedName={selectedName}
+          counterpart={genderCounterpart}
+        />
+      )}
       {/* Name the shown form, but only when it adds something beyond the heading.*/}
       {selectedLabel && selectedLabel !== getEnglishName(species) && (
         <p className="mt-2 text-center text-gray-500">{selectedLabel}</p>

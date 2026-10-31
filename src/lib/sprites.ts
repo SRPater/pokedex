@@ -13,6 +13,11 @@ export function getArtworkUrl(id: number): string {
   return `${SPRITES_BASE}/pokemon/other/official-artwork/${id}.png`;
 }
 
+/** Large render (Pokémon HOME style), used for the big picture on the detail page. */
+export function getRenderUrl(id: number): string {
+  return `${SPRITES_BASE}/pokemon/other/home/${id}.png`;
+}
+
 /** Wide type icon in the Scarlet/Violet style; `id` is the type's ID. */
 export function getTypeIconUrl(id: number): string {
   return `${SPRITES_BASE}/types/generation-ix/scarlet-violet/${id}.png`;

@@ -25,6 +25,10 @@ export type PokemonDetail = {
   selectedLabel: string | undefined;
   /** The forms to offer in the Forms card: everything except the selected one. */
   otherEntries: FormEntry[];
+  /** Variety name of the selected form, i.e. what ?form= holds. */
+  selectedName: string;
+  /** The other gender's variety, when the male/female switch applies. */
+  genderCounterpart: string | null;
 };
 
 /**
@@ -46,23 +50,33 @@ export async function getPokemonDetail(
     Promise.all(species.varieties.map((v) => getPokemonForm(v.pokemon.name))),
   ]);
 
-  const entries = forms.map((form, i) => ({
-    key: species.varieties[i].pokemon.name,
-    label: getFormName(form, species),
-    id: getIdFromUrl(species.varieties[i].pokemon.url),
-  }));
+  const entries = forms.map((form, i) => {
+    const variety = species.varieties[i];
+    const label = getFormName(form, species);
+
+    return {
+      key: variety.pokemon.name,
+      label: getGender(variety.pokemon.name) === null ? label: stripGender(label),
+      id: getIdFromUrl(variety.pokemon.url),
+    };
+  });
 
   const selectedLabel = entries.find(
     (entry) => entry.key === selected.pokemon.name,
   )?.label;
 
-  // Male and female Mega Meowstic look identical, so show a label only once.
-  const uniqueEntries = entries.filter(
-    (entry, i) => entries.findIndex((e) => e.label === entry.label) === i,
+  const selectedGender = getGender(selected.pokemon.name);
+  const filteredEntries = entries.filter(
+    (entry) => {
+      const gender = getGender(entry.key);
+      return (
+        entry.key !== selected.pokemon.name &&
+        (gender === null || gender === selectedGender)
+      );
+    }
   );
-
-  const otherEntries = uniqueEntries.filter(
-    (entry) => entry.key !== selected.pokemon.name,
+  const otherEntries = filteredEntries.filter(
+    (entry, i) => filteredEntries.findIndex((e) => e.label === entry.label) === i,
   );
 
   return {
@@ -70,5 +84,49 @@ export async function getPokemonDetail(
     selectedId: getIdFromUrl(selected.pokemon.url),
     selectedLabel,
     otherEntries,
+    selectedName: selected.pokemon.name,
+    genderCounterpart: getGenderCounterpart(species, selected.pokemon.name),
   };
+}
+
+export function swapGender(varietyName: string): string | null {
+  const parts = varietyName.split("-");
+  if (!(parts.includes("male") || parts.includes("female"))) return null;
+  return parts
+    .map((p) => {
+      if (p === "female") return "male";
+      if (p === "male") return "female";
+      return p;
+    })
+    .join("-");
+}
+
+export function isFemale(varietyName: string): boolean {
+  return getGender(varietyName) === "female";
+}
+
+export function getGenderCounterpart(
+  species: PokemonSpecies,
+  selectedName: string,
+): string | null {
+  const swapped = swapGender(selectedName);
+  if (!swapped) return null;
+
+  return species.varieties.some((v) => v.pokemon.name === swapped) ? swapped : null;
+}
+
+function getGender(varietyName: string): "male" | "female" | null {
+  const parts = varietyName.split("-");
+  return parts.includes("female")
+    ? "female"
+    : parts.includes("male")
+      ? "male"
+      : null;
+}
+
+function stripGender(label: string): string {
+  return label
+    .split(" ")
+    .filter(word => word !== "Male" && word !== "Female")
+    .join(" ");
 }
