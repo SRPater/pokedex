@@ -1,12 +1,13 @@
 import {
-  getPokemon,
-  getPokemonForm,
+  getDefaultFormName,
   getFormName,
   getIdFromUrl,
+  getPokemon,
+  getPokemonForm,
   type Pokemon,
   type PokemonSpecies,
-  getDefaultFormName,
 } from "./pokeapi";
+import { buildVarietyQuery } from "./variety";
 
 export type FormEntry = {
   /** The variety's slug, used in the ?form= URL parameter. */
@@ -15,6 +16,8 @@ export type FormEntry = {
   label: string;
   /** Pokémon ID of this form, used for its artwork. */
   id: number;
+  /** Link to this form's page, with the form, region and gender in the query. */
+  href: string;
 };
 
 export type PokemonDetail = {
@@ -51,6 +54,12 @@ const FORM_LINKS: Record<string, Record<string, string[]>> = {
     "urshifu-single-strike-gmax": ["urshifu-single-strike"],
     "urshifu-rapid-strike-gmax": ["urshifu-rapid-strike"],
   },
+  darmanitan: {
+    "darmanitan-standard": ["darmanitan-zen", "darmanitan-galar-standard"],
+    "darmanitan-zen": ["darmanitan-standard"],
+    "darmanitan-galar-standard": ["darmanitan-standard", "darmanitan-galar-zen"],
+    "darmanitan-galar-zen": ["darmanitan-galar-standard"],
+  },
 };
 
 /**
@@ -80,6 +89,7 @@ export async function getPokemonDetail(
       key: variety.pokemon.name,
       label: getGender(variety.pokemon.name) === null ? label: stripGender(label),
       id: getIdFromUrl(variety.pokemon.url),
+      href: `/pokemon/${species.name}${buildVarietyQuery(species, variety.pokemon.name)}`,
     };
   });
 

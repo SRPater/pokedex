@@ -1,19 +1,20 @@
 // Detail page for /pokemon/[slug]. The slug is a species name (an ID also works
 // and redirects to the name). ?form=<variety> picks which form's data every
 // card shows; missing or unknown values mean the default form.
+import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
-import type { Metadata } from "next";
 
-import { getSpecies, PokeApiError, getNeighbours, getEnglishName, getGenus, getDefaultFormName } from "@/lib/pokeapi";
+import { getDefaultFormName, getEnglishName, getGenus, getNeighbours, getSpecies, PokeApiError } from "@/lib/pokeapi";
 import { getPokemonDetail, isFemale } from "@/lib/pokemon-detail";
 import { getRenderUrl } from "@/lib/sprites";
+import { buildVarietyQuery, findVariety, hasGenderVarieties } from "@/lib/variety";
 
+import FormsCard from "@/components/FormsCard";
+import GenderSwitch from "@/components/GenderSwitch";
 import PokemonNav from "@/components/PokemonNav";
 import OverviewCard from "@/components/OverviewCard";
 import StatsCard from "@/components/StatsCard";
-import FormsCard from "@/components/FormsCard";
-import GenderSwitch from "@/components/GenderSwitch";
 
 // Tab title for /pokemon/[slug, e.g. "Charizard | Pokédex" (the " | Pokédex"
 // comes from the template in the root layout).
@@ -39,11 +40,11 @@ export default async function PokemonDetailPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ form?: string, gender?: string }>;
+  searchParams: Promise<{ form?: string; region?: string; gender?: string }>;
 }) {
   // In current Next.js, params and searchParams are Promises.
   const { slug } = await params;
-  const { form: formParam, gender: genderParam } = await searchParams;
+  const { form, region, gender: genderParam } = await searchParams;
 
   let species;
   try {
@@ -59,11 +60,21 @@ export default async function PokemonDetailPage({
     redirect(`/pokemon/${species.name}`);
   }
 
+  // For species without gender varieties, ?gender= only picks the picture (see below).
+  const variety = findVariety(species, {
+    form,
+    region,
+    gender: hasGenderVarieties(species) ? genderParam : undefined,
+  });
+
+  // A combination that doesn't exist (e.g. ?form=nonsense) goes to the plain page.
+  if (!variety) redirect(`/pokemon/${species.name}`);
+
   const [
     { pokemon, selectedId, selectedLabel, otherEntries, selectedName, genderCounterpart },
     { previous, next },
   ] = await Promise.all([
-    getPokemonDetail(species, formParam),
+    getPokemonDetail(species, variety.pokemon.name),
     getNeighbours(species),
   ]);
 
@@ -94,8 +105,14 @@ export default async function PokemonDetailPage({
       {genderCounterpart && (
         <GenderSwitch
           selected={isFemale(selectedName) ? "female" : "male"}
-          maleHref={`/pokemon/${species.name}?form=${isFemale(selectedName) ? genderCounterpart : selectedName}`}
-          femaleHref={`/pokemon/${species.name}?form=${isFemale(selectedName) ? selectedName : genderCounterpart}`}
+          maleHref={`/pokemon/${species.name}${buildVarietyQuery(
+            species,
+            isFemale(selectedName) ? genderCounterpart : selectedName,
+          )}`}
+          femaleHref={`/pokemon/${species.name}${buildVarietyQuery(
+            species,
+            isFemale(selectedName) ? selectedName : genderCounterpart,
+          )}`}
         />
       )}
       {pictureOnly && (
@@ -116,7 +133,7 @@ export default async function PokemonDetailPage({
           <StatsCard stats={pokemon.stats} />
         </div>
 
-        <FormsCard speciesName={species.name} entries={otherEntries} />
+        <FormsCard entries={otherEntries} />
       </div>
     </div>
   );

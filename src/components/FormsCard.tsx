@@ -8,10 +8,8 @@ import Card from "./Card";
 
 /** The species' other forms; each links to the same page with ?form= set. */
 export default function FormsCard({
-  speciesName,
   entries,
 }: {
-  speciesName: string;
   entries: FormEntry[];
 }) {
   // Species with a single form (e.g. Ditto) get no card at all.
@@ -23,7 +21,7 @@ export default function FormsCard({
         {entries.map((entry) => (
           <Link
             key={entry.key}
-            href={`/pokemon/${speciesName}?form=${entry.key}`}
+            href={entry.href}
           >
             <figure className="flex flex-col items-center">
               <Image
