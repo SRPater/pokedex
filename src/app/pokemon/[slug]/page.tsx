@@ -88,13 +88,12 @@ export default async function PokemonDetailPage({
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 md:px-8 pb-8">
-      <PokemonNav previous={previous} next={next} />
-      <h1 className="text-center text-3xl font-bold pt-8">
-        #{String(species.id).padStart(4, "0")} {getEnglishName(species)}
-      </h1>
-      <p className="pb-8 text-center text-lg text-gray-500">
-        {getGenus(species)}
-      </p>
+      <PokemonNav previous={previous} next={next}>
+        <h1 className="text-center text-3xl font-bold">
+          #{String(species.id).padStart(4, "0")} {getEnglishName(species)}
+        </h1>
+        <p className="text-center text-lg text-gray-500">{getGenus(species)}</p>
+      </PokemonNav>
       <Image
         src={getRenderUrl(selectedId, showFemale)}
         alt={getEnglishName(species)}
