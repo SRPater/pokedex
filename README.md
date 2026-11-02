@@ -4,6 +4,8 @@ A small Next.js (App Router) app built on [PokéAPI](https://pokeapi.co), made
 for learning Next.js. There is no database: all data comes from the API and is
 cached by Next.js for 24 hours.
 
+Live: https://pokedex-srp-ater.vercel.app
+
 ## Running it
 
 ```bash
@@ -16,12 +18,17 @@ npm test        # Vitest unit tests for the URL/variety logic (src/lib/variety.t
 If a Tailwind class seems to do nothing in dev, hard-reload (Ctrl+Shift+R)
 before debugging.
 
-
 ## Stack
 
-Next.js (App Router), TypeScript, Tailwind CSS, Data comes from PokéAPI, images
+Next.js (App Router), TypeScript, Tailwind CSS. Data comes from PokéAPI, images
 from the PokeAPI/sprites repository on GitHub (that host is allowed in
 `next.config.ts` under `images.remotePatterns`).
+
+## Deployment
+
+Deployed on Vercel from the Github repository (root directory `./`, no
+environment variables, since PokéAPI needs no key). Pushing to `main` deploys
+automatically, which is Vercel's default for a Git-connected project.
 
 ## Pages
 
@@ -29,19 +36,26 @@ from the PokeAPI/sprites repository on GitHub (that host is allowed in
 - `/pokemon`: one row per species in Pokédex order, 20 per page (`?page=`). Each
   row shows the number, the default form's sprite, the name, the category and
   the type icons; the category and types are hidden below the `md` breakpoint.
+  Invalid page numbers fall back to page 1, and pages past the end are a 404.
 - `/pokemon/[slug]`: detail page. The slug is the species name; an ID such as
   `/pokemon/25` redirects to `/pokemon/pikachu`. Three optional parameters pick
   the variety: `?form=` (`mega`, `mega-x`, `gmax`, `zen`, ...), `?region=`
   (`alola`, `galar`, `hisui`, `paldea`) and `?gender=` (`female`; male is the
   default). A parameter that is left out means "same as the default variety". A
-  combination that doesn't exist redirects to the plain page.
+  combination that doesn't exist redirects to the plain page. The heading sits
+  between the previous and next buttons ( +"PokemonNav"+ ), which link to the
+  neighbouring species in Pokédex order and wrap around: the one before #1 is
+  the last species, and the one after it is #1.
 
-Every page has a header (`SiteHeader`, in the root layout) linkin to `/` and
-`/pokemon`, `global-error.tsx` doesn't show it on purpose, because it replaces
+Every page has a header (`SiteHeader`, in the root layout) linking to `/` and
+`/pokemon`. `global-error.tsx` doesn't show it on purpose, because it replaces
 the whole layout.
 
 ## Layout of the code
 
+- `src/app/`: besides the two pages, `layout.tsx` (header and title template),
+  the landing page `page.tsx`, `not-found.tsx`, `error.tsx`, `global-error.tsx`
+  and `pokemon/[slug]/loading.tsx`
 - `src/app/pokemon/page.tsx`: the list page
 - `src/app/pokemon/[slug]/page.tsx`: the detail page
 - `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `FormsCard`, 
@@ -50,7 +64,9 @@ the whole layout.
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers, the
   type lookup (form name to types)
-- `src/lib/pokemon-detail.ts`: selected form and the other forms for the detail page
+- `src/lib/pokemon-detail.ts`: everything the detail page needs beyond the
+  species: the selected variety's data, the other forms for the Forms card
+  (`LIMITED_FORMS`, `FORM_LINKS`) and the gender-switch helpers
 - `src/lib/sprites.ts`: image URL builders
 - `src/lib/variety.ts`: `parseVariety`, `findVariety` and `buildVarietyQuery`,
   which translate between variety names (`meowstic-female-mega`) and URL
@@ -82,7 +98,7 @@ the whole layout.
   a name (the variety `koraidon` has the form `koraidon-apex-build`), so
   `getPokemonForm` returns `null` on a 404 and the label falls back to the
   species name.
-- **Forms card.** It offers the other forms int he gender being viewed, labeled
+- **Forms card.** It offers the other forms in the gender being viewed, labeled
   without the gender (the base form of Meowstic reads "Meowstic", its Mega "Mega
   Meowstic"). `LIMITED_FORMS` (in `pokemon-detail.ts`) lists species whose extra
   forms are cosmetic or in-game modes (Pikachu, Eevee, Koraidon, Miraidon): the
@@ -128,6 +144,8 @@ the whole layout.
 
 ## To do
 
-- Deploy
-- Search on the list page (by name, driven by the URL like the pagination)
+- Search on the list page (by name, driven by the URL like the pagination),
+  then filters
 - Learnsets
+- A refactoring round: comments and redundant code in the files that grew most
+  (`variety.ts`, `pokemon-detail.ts`, the detail page)
