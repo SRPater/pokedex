@@ -14,6 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Pages that export their own title get " | Pokédex" added by the template;
+// "Pokédex" is the title for pages that don't (the landing page).
 export const metadata: Metadata = {
   title: {
     default: "Pokédex",

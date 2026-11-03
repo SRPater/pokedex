@@ -14,6 +14,8 @@ export default function GenderBar({ genderRate }: { genderRate: number }) {
 
   return (
     <div className="flex items-center gap-2 md:gap-3">
+      {/* From md up the labels get a fixed width, so the bar starts in line with the
+          Capture Rate bar; on phones they shrink to their text to give the bar room. */}
       <span className="text-sm md:w-12 md:text-base">
         {male}%<span className="sr-only"> male</span>
       </span>

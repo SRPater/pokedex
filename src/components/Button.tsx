@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 // One look for everything that is styled as a button, so link buttons and
 // real buttons can't drift apart.
@@ -9,7 +9,7 @@ const STYLES =
 /** A navigation link that looks like a button. */
 export function ButtonLink({
   href,
-  title = "",
+  title,
   children,
   className = "",
 }: {
@@ -25,6 +25,7 @@ export function ButtonLink({
   );
 }
 
+/** A real button for actions (retry, reload, ...). */
 export function Button({
   onClick,
   children,
@@ -35,7 +36,7 @@ export function Button({
   className?: string;
 }) {
   return (
-    <button onClick={onClick} className={`${STYLES} ${className}`}>
+    <button type="button" onClick={onClick} className={`${STYLES} ${className}`}>
       {children}
     </button>
   );

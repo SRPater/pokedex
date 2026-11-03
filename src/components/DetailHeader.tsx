@@ -1,12 +1,12 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
+import Image from "next/image";
 
-import { getEnglishName } from "@/lib/pokeapi";
-import type { PokemonSpecies } from "@/lib/pokeapi";
+import { getEnglishName, type PokemonSpecies } from "@/lib/pokeapi";
 import { getSpriteUrl } from "@/lib/sprites";
 
 import { ButtonLink } from "./Button";
 
+/** A neighbouring species as a button: sprite and number, with the name as a tooltip and for screen readers. */
 function NeighbourLink({
   species,
   direction,
@@ -44,11 +44,12 @@ function NeighbourLink({
   );
 }
 
-/** Header row of the detail page: the neighbouring species on both sides and
+/**
+ * Header row of the detail page: the neighbouring species on both sides and
  * the heading (`children`) in between. Below `md` there is no room for all
  * three, so the heading wraps onto its own line under the two buttons.
  */
-export default function PokemonNav({
+export default function DetailHeader({
   previous,
   next,
   children,
@@ -57,13 +58,23 @@ export default function PokemonNav({
   next: PokemonSpecies;
   children: ReactNode;
 }) {
+  // order-* sets the sequence: previous, next, heading on a phone (the heading's
+  // w-full pushes it onto its own line); previous, heading, next from md up.
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 pb-8 pt-8 md:flex-nowrap">
-      <NeighbourLink species={previous} direction="previous" className="order-1" />
+    <div className="flex flex-wrap items-center justify-between gap-4 py-8 md:flex-nowrap">
+      <NeighbourLink
+        species={previous}
+        direction="previous"
+        className="order-1"
+      />
       <div className="order-3 w-full text-center md:order-2 md:w-auto md:flex-1">
         {children}
       </div>
-      <NeighbourLink species={next} direction="next" className="order-2 md:order-3" />
+      <NeighbourLink
+        species={next}
+        direction="next"
+        className="order-2 md:order-3"
+      />
     </div>
   );
 }

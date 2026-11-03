@@ -1,5 +1,5 @@
+import { getStatLabel, MAX_STAT, MAX_TOTAL } from "@/lib/display";
 import type { Pokemon } from "@/lib/pokeapi";
-import { MAX_STAT, MAX_TOTAL, getStatLabel } from "@/lib/display";
 
 import Card from "./Card";
 import StatBar from "./StatBar";

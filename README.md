@@ -43,7 +43,7 @@ automatically, which is Vercel's default for a Git-connected project.
   (`alola`, `galar`, `hisui`, `paldea`) and `?gender=` (`female`; male is the
   default). A parameter that is left out means "same as the default variety". A
   combination that doesn't exist redirects to the plain page. The heading sits
-  between the previous and next buttons ( +"PokemonNav"+ ), which link to the
+  between the previous and next buttons ( +"DetailHeader"+ ), which link to the
   neighbouring species in Pokédex order and wrap around: the one before #1 is
   the last species, and the one after it is #1.
 
@@ -58,8 +58,8 @@ the whole layout.
   and `pokemon/[slug]/loading.tsx`
 - `src/app/pokemon/page.tsx`: the list page
 - `src/app/pokemon/[slug]/page.tsx`: the detail page
-- `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `FormsCard`, 
-  `GenderBar`, `GenderSwitch`, `OverviewCard`, `PokemonNav`, `PokemonTableSkeleton`,
+- `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `DetailHeader`, 
+  `FormsCard`, `GenderBar`, `GenderSwitch`, `OverviewCard`, `PokemonTableSkeleton`,
   `SiteHeader`, `StatBar`, `StatsCard`, `StatusMessage`
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers, the
@@ -103,9 +103,9 @@ the whole layout.
   Meowstic"). `LIMITED_FORMS` (in `pokemon-detail.ts`) lists species whose extra
   forms are cosmetic or in-game modes (Pikachu, Eevee, Koraidon, Miraidon): the
   card offers only the default form plus what is listed for them (Gigantamax).
-  `FORM_LINKS` gives species with two base looks (Urshifu, Darmanitan) their own
-  list of links per selected form. Both tables use variety names, so they don't
-  depend on the URL scheme.
+  `FORM_LINKS` gives species with two base looks (Urshifu, Darmanitan, Toxtricity)
+  their own list of links per selected form. Both tables use variety names, so they
+  don't depend on the URL scheme.
 - **Gender.** Species with separate gender varieties (Meowstic, Indeedee,
   Oinkologne, Basculegion) get a ♂/♀ switch under the artwork that links to the
   other gender's variety, so stats and abilities follow. It also shows on Megas,
@@ -147,5 +147,3 @@ the whole layout.
 - Search on the list page (by name, driven by the URL like the pagination),
   then filters
 - Learnsets
-- A refactoring round: comments and redundant code in the files that grew most
-  (`variety.ts`, `pokemon-detail.ts`, the detail page)

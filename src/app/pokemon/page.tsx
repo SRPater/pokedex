@@ -1,26 +1,27 @@
 // List page for /pokemon: one row per species, 20 per page, paged with ?page=.
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import {
-  getSpeciesList,
-  getSpecies,
-  getIdFromUrl,
-  getEnglishName,
-  getTypeLookup,
   getDefaultFormName,
+  getEnglishName,
   getGenus,
+  getIdFromUrl,
+  getSpecies,
+  getSpeciesList,
+  getTypeLookup,
 } from "@/lib/pokeapi";
-import { getSpriteUrl, getSmallTypeIconUrl } from "@/lib/sprites";
+import { getSmallTypeIconUrl, getSpriteUrl } from "@/lib/sprites";
 
-import PokemonTableSkeleton from "@/components/PokemonTableSkeleton";
 import { ButtonLink } from "@/components/Button";
+import PokemonTableSkeleton from "@/components/PokemonTableSkeleton";
 
 const PAGE_SIZE = 20;
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "All Pokémon",
 };
 
@@ -38,13 +39,17 @@ export default async function PokemonPage({
   return (
     <div className="w-full max-w-5xl mx-auto px-4 md:px-8 pb-8">
       <h1 className="text-center text-3xl font-bold py-8">All Pokémon</h1>
-      <Suspense key={page} fallback={<PokemonTableSkeleton />}>
+      <Suspense key={page} fallback={<PokemonTableSkeleton rows={PAGE_SIZE} />}>
         <PokemonList page={page} />
       </Suspense>
     </div>
   );
 }
 
+/**
+ * One page of the table plus the pagination buttons. It's a separate component so
+ * the Suspense boundary in PokemonPage can show a skeleton while its data loads.
+ */
 async function PokemonList({ page }: { page: number }) {
   const offset = (page - 1) * PAGE_SIZE;
   const [data, typeLookup] = await Promise.all([
@@ -65,11 +70,13 @@ async function PokemonList({ page }: { page: number }) {
         <table className="w-full table-fixed">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-950">
-              <th className="w-16 md:w-24 text-left py-4 pl-4 md:pl-8 pr-2">#</th>
+              <th className="w-16 md:w-24 text-left py-4 pl-4 md:pl-8 pr-2">
+                #
+              </th>
               <th className="w-20 md:w-56 text-left py-4">
                 <span className="sr-only">Sprite</span>
               </th>
-              <th className="text-left py-4 pl-2 pr-2 md:pr-8">Name</th>
+              <th className="text-left py-4 px-2 md:pr-8">Name</th>
               <th className="hidden md:table-cell text-left py-4">Category</th>
               <th className="hidden md:table-cell w-32 text-left py-4">Type</th>
             </tr>
@@ -93,7 +100,7 @@ async function PokemonList({ page }: { page: number }) {
                     />
                   </div>
                 </td>
-                <td className="py-2 pl-2 pr-2 md:pr-8">
+                <td className="py-2 px-2 md:pr-8">
                   {/* Stretched link: its ::after layer covers the whole (relative) row, so the entire row is clickable. */}
                   <Link
                     href={`/pokemon/${s.name}`}
@@ -102,8 +109,11 @@ async function PokemonList({ page }: { page: number }) {
                     {getEnglishName(s)}
                   </Link>
                 </td>
-                <td className="hidden md:table-cell py-2 pr-4 text-gray-500">{getGenus(s)}</td>
+                <td className="hidden md:table-cell py-2 pr-4 text-gray-500">
+                  {getGenus(s)}
+                </td>
                 <td className="hidden md:table-cell p-2">
+                  {/* Types belong to forms, so look them up by the default form's name. */}
                   <div className="flex gap-2">
                     {(typeLookup.get(getDefaultFormName(s)) ?? []).map((t) => (
                       <Image
@@ -112,7 +122,7 @@ async function PokemonList({ page }: { page: number }) {
                         alt={t.name}
                         width={60}
                         height={60}
-                        className="h-10 w-10 rounded-full"
+                        className="h-9 w-9"
                       />
                     ))}
                   </div>

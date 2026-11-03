@@ -1,6 +1,7 @@
-import StatusMessage from "@/components/StatusMessage";
 import { ButtonLink } from "@/components/Button";
+import StatusMessage from "@/components/StatusMessage";
 
+// Shown for every 404: unknown URLs, and the notFound() calls in the list and detail pages.
 export default function NotFound() {
   return (
     <StatusMessage

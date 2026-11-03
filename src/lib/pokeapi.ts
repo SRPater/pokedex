@@ -4,12 +4,12 @@ type NamedResource = {
   url: string;
 };
 
-export type LocalizedName = {
+type LocalizedName = {
   name: string;
   language: NamedResource;
 };
 
-export type SpeciesListResponse = {
+type SpeciesListResponse = {
   count: number;
   next: string | null;
   previous: string | null;
@@ -27,7 +27,7 @@ export type PokemonSpecies = {
   capture_rate: number;
   color: NamedResource;
   names: LocalizedName[];
-  genera: { genus: string; language: NamedResource}[];
+  genera: { genus: string; language: NamedResource }[];
   varieties: { is_default: boolean; pokemon: NamedResource }[];
 };
 
@@ -46,7 +46,7 @@ export type Pokemon = {
   stats: { base_stat: number; stat: NamedResource }[];
 };
 
-export type PokemonTypeData = {
+type PokemonTypeData = {
   id: number;
   name: string;
   pokemon: { slot: number; pokemon: NamedResource }[];
@@ -86,10 +86,17 @@ async function fetchFromApi<T>(path: string): Promise<T> {
   return res.json();
 }
 
-export function getSpeciesList(limit: number, offset: number): Promise<SpeciesListResponse> {
-  return fetchFromApi<SpeciesListResponse>(`pokemon-species?limit=${limit}&offset=${offset}`);
+/** One page of the species list (names and URLs only), in Pokédex order. */
+export function getSpeciesList(
+  limit: number,
+  offset: number,
+): Promise<SpeciesListResponse> {
+  return fetchFromApi<SpeciesListResponse>(
+    `pokemon-species?limit=${limit}&offset=${offset}`,
+  );
 }
 
+/** A species by name ("meowstic") or Pokédex number (678). */
 export function getSpecies(slug: number | string): Promise<PokemonSpecies> {
   return fetchFromApi<PokemonSpecies>(`pokemon-species/${slug}`);
 }
@@ -101,7 +108,8 @@ export function getSpecies(slug: number | string): Promise<PokemonSpecies> {
 export async function getNeighbours(
   species: PokemonSpecies,
 ): Promise<{ previous: PokemonSpecies; next: PokemonSpecies }> {
-  const { count } = (await getSpeciesList(1, 0));
+  // One entry is enough: we only need the total count.
+  const { count } = await getSpeciesList(1, 0);
   const previousId = species.id === 1 ? count : species.id - 1;
   const nextId = species.id === count ? 1 : species.id + 1;
 
@@ -113,7 +121,10 @@ export async function getNeighbours(
   return { previous, next };
 }
 
-export async function getPokemonForm(name: string): Promise<PokemonForm | null> {
+/** The form with this name, or null if there is none (variety and form names don't always match). */
+export async function getPokemonForm(
+  name: string,
+): Promise<PokemonForm | null> {
   try {
     return await fetchFromApi<PokemonForm>(`pokemon-form/${name}`);
   } catch (error) {
@@ -124,11 +135,13 @@ export async function getPokemonForm(name: string): Promise<PokemonForm | null> 
   }
 }
 
+/** One variety's own data (types, stats, abilities, size), e.g. "charizard-mega-x". */
 export function getPokemon(name: string): Promise<Pokemon> {
   return fetchFromApi<Pokemon>(`pokemon/${name}`);
 }
 
-export function getType(name: string): Promise<PokemonTypeData> {
+/** A type and every Pokémon form that has it; used to build the type lookup. */
+function getType(name: string): Promise<PokemonTypeData> {
   return fetchFromApi<PokemonTypeData>(`type/${name}`);
 }
 
@@ -139,14 +152,16 @@ export function getIdFromUrl(url: string): number {
 }
 
 /** Picks the English entry by language code; array positions differ per resource. */
-export function findEnglish(names: LocalizedName[]): string | undefined {
+function findEnglish(names: LocalizedName[]): string | undefined {
   return names.find((n) => n.language.name === "en")?.name;
 }
 
+/** English display name of a species, e.g. "Mr. Mime"; falls back to the slug. */
 export function getEnglishName(species: PokemonSpecies): string {
   return findEnglish(species.names) ?? species.name;
 }
 
+/** The species' category in English, e.g. "Flame Pokémon". */
 export function getGenus(species: PokemonSpecies): string | undefined {
   return species.genera.find((g) => g.language.name === "en")?.genus;
 }
@@ -162,18 +177,39 @@ export function getFormName(
   return findEnglish(form?.names ?? []) ?? getEnglishName(species);
 }
 
-/** Name of the species' default form, e.g. "meowstic-male" for Meowstic. */
-export function getDefaultFormName(species: PokemonSpecies): string {
-  const variety = species.varieties.find((v) => v.is_default) ?? species.varieties[0];
-  return variety.pokemon.name;
+/** The species' default variety (the one marked is_default, or the first if none is). */
+export function getDefaultVariety(
+  species: PokemonSpecies,
+): PokemonSpecies["varieties"][number] {
+  return species.varieties.find((v) => v.is_default) ?? species.varieties[0];
 }
 
-// The 18 regular types. Stellar, unknown an shadow are left out on purpose:
+/** Name of the species' default form, e.g. "meowstic-male" for Meowstic. */
+export function getDefaultFormName(species: PokemonSpecies): string {
+  return getDefaultVariety(species).pokemon.name;
+}
+
+// The 18 regular types. Stellar, unknown and shadow are left out on purpose:
 // they aren't types of ordinary Pokémon.
 const TYPE_NAMES = [
-  "normal", "fighting", "flying", "poison", "ground", "rock",
-  "bug", "ghost", "steel", "fire", "water", "grass",
-  "electric", "psychic", "ice", "dragon", "dark", "fairy",
+  "normal",
+  "fighting",
+  "flying",
+  "poison",
+  "ground",
+  "rock",
+  "bug",
+  "ghost",
+  "steel",
+  "fire",
+  "water",
+  "grass",
+  "electric",
+  "psychic",
+  "ice",
+  "dragon",
+  "dark",
+  "fairy",
 ];
 
 /** Maps a Pokémon (or form) name to its types, primary type first. */

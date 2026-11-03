@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 
-import type { Pokemon, PokemonSpecies } from "@/lib/pokeapi";
-import { getIdFromUrl } from "@/lib/pokeapi";
-import { getTypeIconUrl } from "@/lib/sprites";
 import {
   MAX_CAPTURE_RATE,
   getColorClass,
@@ -11,10 +8,12 @@ import {
   formatWeight,
   formatSlug,
 } from "@/lib/display";
+import { getIdFromUrl, type Pokemon, type PokemonSpecies } from "@/lib/pokeapi";
+import { getTypeIconUrl } from "@/lib/sprites";
 
 import Card from "./Card";
-import StatBar from "./StatBar";
 import GenderBar from "./GenderBar";
+import StatBar from "./StatBar";
 
 // One labelled row. The value spans both value columns of the table.
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -52,7 +51,7 @@ export default function OverviewCard({
         <tbody>
           {/* Type row: the table's two value columns hold one icon each */}
           <tr>
-            <th scope="row" className="py-2 text-left font-semibold">
+            <th scope="row" className="py-2 text-left align-top font-semibold whitespace-nowrap">
               Type
             </th>
             {pokemon.types.map((t) => (
@@ -87,6 +86,7 @@ export default function OverviewCard({
 
           <Row label="Pokédex Color">
             <div className="flex items-center gap-2">
+              {/* Small square in the species' Pokédex colour; the name follows it. */}
               <span
                 className={`h-4 w-4 rounded border border-gray-400 ${getColorClass(species.color.name)}`}
                 aria-hidden="true"
@@ -104,7 +104,9 @@ export default function OverviewCard({
             </div>
           </Row>
 
-          <Row label="Gender Ratio"><GenderBar genderRate={species.gender_rate} /></Row>
+          <Row label="Gender Ratio">
+            <GenderBar genderRate={species.gender_rate} />
+          </Row>
         </tbody>
       </table>
     </Card>

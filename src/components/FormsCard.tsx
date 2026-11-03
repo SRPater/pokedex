@@ -6,27 +6,20 @@ import { getArtworkUrl } from "@/lib/sprites";
 
 import Card from "./Card";
 
-/** The species' other forms; each links to the same page with ?form= set. */
-export default function FormsCard({
-  entries,
-}: {
-  entries: FormEntry[];
-}) {
-  // Species with a single form (e.g. Ditto) get no card at all.
+/** The species' other forms; each links to its page via the entry's `href`. */
+export default function FormsCard({ entries }: { entries: FormEntry[] }) {
+  // Nothing to offer (e.g. Ditto, Koraidon): no card at all.
   if (entries.length === 0) return null;
 
   return (
     <Card title="Other Forms">
       <div className="flex flex-wrap justify-center gap-6">
         {entries.map((entry) => (
-          <Link
-            key={entry.key}
-            href={entry.href}
-          >
+          <Link key={entry.key} href={entry.href}>
             <figure className="flex flex-col items-center">
               <Image
                 src={getArtworkUrl(entry.id)}
-                alt={entry.label}
+                alt=""
                 width={128}
                 height={128}
               />

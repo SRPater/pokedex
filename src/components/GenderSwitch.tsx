@@ -1,6 +1,9 @@
 import Link from "next/link";
 
-/** Male/female switch under the artwork, for species with gender varieties. */
+/**
+ * Male/female switch under the artwork. The page decides what each side links to:
+ * the other gender's variety (Meowstic) or just ?gender=female (picture-only, Pikachu).
+ */
 export default function GenderSwitch({
   selected,
   maleHref,
@@ -10,10 +13,20 @@ export default function GenderSwitch({
   maleHref: string;
   femaleHref: string;
 }) {
-  // Work out which variety is the male one and which the female one.
+  // The selected side is plain text; the other side is a link.
   const options = [
-    { symbol: "♂", label: "Male", href: maleHref, isSelected: selected === "male" },
-    { symbol: "♀", label: "Female", href: femaleHref, isSelected: selected === "female" },
+    {
+      symbol: "♂",
+      label: "Male",
+      href: maleHref,
+      isSelected: selected === "male",
+    },
+    {
+      symbol: "♀",
+      label: "Female",
+      href: femaleHref,
+      isSelected: selected === "female",
+    },
   ];
 
   return (

@@ -3,17 +3,21 @@
 const SPRITES_BASE =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites";
 
-/** Small pixel sprites, used in the list. `id` is a Pokémon ID, forms included. */
+/** Small pixel sprites, used in the list and the previous/next buttons. id is a Pokémon ID, forms included. */
 export function getSpriteUrl(id: number): string {
   return `${SPRITES_BASE}/pokemon/${id}.png`;
 }
 
-/** Large official artwork, used on the detail page. */
+/** Large official artwork, used for the thumbnails in the Other Forms card. */
 export function getArtworkUrl(id: number): string {
   return `${SPRITES_BASE}/pokemon/other/official-artwork/${id}.png`;
 }
 
-/** Large render (Pokémon HOME style), used for the big picture on the detail page. */
+/**
+ * Large render (Pokémon HOME style), used for the big picture on the detail page.
+ * It's the only style with female pictures (`female` = true), which exist only
+ * for species with `has_gender_differences`. Some cosmetic forms have no render.
+ */
 export function getRenderUrl(id: number, female = false): string {
   return `${SPRITES_BASE}/pokemon/other/home/${female ? "female/" : ""}${id}.png`;
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PokemonSpecies } from "./pokeapi";
-import { buildVarietyQuery, findVariety, parseVariety } from "./variety";
+import { buildVarietyQuery, findVariety, parseVariety, stripGender, swapGender } from "./variety";
 
 describe("parseVariety", () => {
   it.each([
@@ -158,5 +158,28 @@ describe("round trip", () => {
       const found = findVariety(species, wanted);
       expect(found?.pokemon.name).toBe(variety.pokemon.name);
     }
+  });
+});
+
+describe("swapGender", () => {
+  it.each([
+    ["meowstic-male", "meowstic-female"],
+    ["meowstic-female", "meowstic-male"],
+    ["meowstic-male-mega", "meowstic-female-mega"],
+    ["indeedee-female", "indeedee-male"],
+    ["charizard-mega-x", null],
+  ])("%s -> %s", (name, expected) => {
+    expect(swapGender(name)).toBe(expected);
+  });
+});
+
+describe("stripGender", () => {
+  it.each([
+    ["Male Meowstic", "Meowstic"],
+    ["Female Meowstic", "Meowstic"],
+    ["Mega Meowstic", "Mega Meowstic"],
+    ["Mega Charizard X", "Mega Charizard X"],
+  ])("%s -> %s", (label, expected) => {
+    expect(stripGender(label)).toBe(expected);
   });
 });

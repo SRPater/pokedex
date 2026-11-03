@@ -8,6 +8,7 @@ export const MAX_STAT = 200;
 export const MAX_TOTAL = 800;
 export const MAX_CAPTURE_RATE = 255;
 
+// Display labels for PokéAPI's stat names; any name not listed falls back to formatSlug.
 const STAT_LABELS: Record<string, string> = {
   hp: "HP",
   attack: "Attack",
@@ -40,11 +41,14 @@ export function getColorClass(color: string): string {
   return COLOR_CLASSES[color] ?? "bg-gray-300";
 }
 
+const INCHES_PER_DECIMETRE = 3.93701;
+const POUNDS_PER_HECTOGRAM = 0.220462;
+
 /** PokéAPI stores height in decimetres. Returns e.g. "1.7 m | 5'07"". */
 export function formatHeight(decimetres: number): string {
   const metric = (decimetres / 10).toFixed(1);
   // Round to whole inches before splitting, so we never get 5'12".
-  const totalInches = Math.round(decimetres * 3.93701);
+  const totalInches = Math.round(decimetres * INCHES_PER_DECIMETRE);
   const feet = Math.floor(totalInches / 12);
   const inches = totalInches % 12;
   const imperial = `${feet}'${String(inches).padStart(2, "0")}"`;
@@ -59,7 +63,7 @@ export function formatWeight(hectograms: number): string {
   if (hectograms === 0) return "???.? kg | ????.? lbs";
 
   const metric = (hectograms / 10).toFixed(1);
-  const imperial = (hectograms * 0.220462).toFixed(1);
+  const imperial = (hectograms * POUNDS_PER_HECTOGRAM).toFixed(1);
 
   return `${metric} kg | ${imperial} lbs`;
 }
