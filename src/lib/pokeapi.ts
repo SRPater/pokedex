@@ -9,7 +9,7 @@ type LocalizedName = {
   language: NamedResource;
 };
 
-type SpeciesListResponse = {
+export type SpeciesListResponse = {
   count: number;
   next: string | null;
   previous: string | null;
@@ -94,6 +94,14 @@ export function getSpeciesList(
   return fetchFromApi<SpeciesListResponse>(
     `pokemon-species?limit=${limit}&offset=${offset}`,
   );
+}
+
+/** Every species (name and URL only) in Pokédex order; used for searching. */
+export async function getAllSpeciesNames(): Promise<SpeciesListResponse["results"]> {
+  // The API has no search endpoint, so we fetch the whole list (1025 entries, one
+  // cached request) and filter it ourselves. The limit just has to be above the count.
+  const { results } = await getSpeciesList(2000, 0);
+  return results;
 }
 
 /** A species by name ("meowstic") or Pokédex number (678). */

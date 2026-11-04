@@ -6,6 +6,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
+  getAllSpeciesNames,
   getDefaultFormName,
   getEnglishName,
   getGenus,
@@ -13,11 +14,14 @@ import {
   getSpecies,
   getSpeciesList,
   getTypeLookup,
+  type SpeciesListResponse,
 } from "@/lib/pokeapi";
+import { normalizeQuery, searchByName } from "@/lib/search";
 import { getSmallTypeIconUrl, getSpriteUrl } from "@/lib/sprites";
 
 import { ButtonLink } from "@/components/Button";
 import PokemonTableSkeleton from "@/components/PokemonTableSkeleton";
+import SearchBox from "@/components/SearchBox";
 
 const PAGE_SIZE = 20;
 
@@ -28,19 +32,27 @@ export const metadata: Metadata = {
 export default async function PokemonPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string, q?: string }>;
 }) {
   const params = await searchParams;
 
   // Invalid page numbers (abc, 0, -1, 1.5) fall back to page 1.
   const rawPage = params.page ? Number(params.page) : 1;
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
+  const query = params.q ?? "";
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 md:px-8 pb-8">
       <h1 className="text-center text-3xl font-bold py-8">All Pokémon</h1>
-      <Suspense key={page} fallback={<PokemonTableSkeleton rows={PAGE_SIZE} />}>
-        <PokemonList page={page} />
+      {/* Outside the Suspense on purpose: the box must stay mounted (and keep focus)
+          while the list below it reloads. */}
+      <div className="mb-6">
+        <SearchBox initialQuery={query} />
+      </div>
+      {/* The key includes the query, so a new search shows the skeleton again
+          (same reason as the page number: without a new key React keeps the old content). */}
+      <Suspense key={`${page}-${query}`} fallback={<PokemonTableSkeleton rows={PAGE_SIZE} />}>
+        <PokemonList page={page} query={query} />
       </Suspense>
     </div>
   );
@@ -50,18 +62,37 @@ export default async function PokemonPage({
  * One page of the table plus the pagination buttons. It's a separate component so
  * the Suspense boundary in PokemonPage can show a skeleton while its data loads.
  */
-async function PokemonList({ page }: { page: number }) {
-  const offset = (page - 1) * PAGE_SIZE;
-  const [data, typeLookup] = await Promise.all([
-    getSpeciesList(PAGE_SIZE, offset),
+async function PokemonList({ page, query }: { page: number, query: string }) {
+  const [{ entries, hasNext, total }, typeLookup] = await Promise.all([
+    getPageEntries(page, query),
     getTypeLookup(),
   ]);
 
-  // Pages past the end of the list are a 404.
-  if (data.results.length === 0) notFound();
+  // An empty page is not an error: either a search without matches, or a page
+  // number past the end of the list or of the matches. Each shows a message and a
+  // way back.
+  if (entries.length === 0) {
+    const noMatches = normalizeQuery(query) !== "" && total === 0;
+    return (
+      <div className="py-12 text-center">
+        <p className="text-gray-500">
+          {noMatches
+            ? `No Pokémon found for “${query}”.`
+            : "There are no Pokémon on this page."}
+        </p>
+        <div className="mt-6">
+          {noMatches ? (
+            <ButtonLink href="/pokemon">Show all Pokémon</ButtonLink>
+          ) : (
+            <ButtonLink href={pageHref(1, query)}>Back to the first page</ButtonLink>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const species = await Promise.all(
-    data.results.map((entry) => getSpecies(getIdFromUrl(entry.url))),
+    entries.map((entry) => getSpecies(getIdFromUrl(entry.url))),
   );
 
   return (
@@ -135,17 +166,57 @@ async function PokemonList({ page }: { page: number }) {
 
       <div className="flex justify-between mt-6">
         {page > 1 && (
-          <ButtonLink href={`/pokemon?page=${page - 1}`}>
+          <ButtonLink href={pageHref(page - 1, query)}>
             Previous page
           </ButtonLink>
         )}
 
-        {data.next && (
-          <ButtonLink href={`/pokemon?page=${page + 1}`} className="ml-auto">
+        {hasNext && (
+          <ButtonLink href={pageHref(page + 1, query)} className="ml-auto">
             Next page
           </ButtonLink>
         )}
       </div>
     </>
   );
+}
+
+/**
+ * The species entries (name and URL) for one page of the list, and whether
+ * another page follows. With a query it pages through the matches instead.
+ */
+async function getPageEntries(
+  page: number,
+  query: string,
+): Promise<{
+    entries: SpeciesListResponse["results"];
+    hasNext: boolean;
+    /** How many Pokémon the list (or the search) has in total, over all pages. */
+    total: number;
+  }> {
+  const offset = (page - 1) * PAGE_SIZE;
+
+  if (normalizeQuery(query) === "") {
+    const data = await getSpeciesList(PAGE_SIZE, offset);
+    return { entries: data.results, hasNext: data.next !== null, total: data.count };
+  }
+
+  // The API has no search endpoint, so fetch every name (one cached request) and
+  // filter them ourselves, then take the current page out of the matches.
+  const matches = searchByName(await getAllSpeciesNames(), query);
+  return {
+    entries: matches.slice(offset, offset + PAGE_SIZE),
+    hasNext: offset + PAGE_SIZE < matches.length,
+    total: matches.length,
+  };
+}
+
+// Link to a page of the list. The page number is left out for page 1 (cleaner
+// URLs), and the search query is kept, so paging through results stays in the search.
+function pageHref(page: number, query: string): string {
+  const params = new URLSearchParams();
+  if (query) params.set("q", query);
+  if (page > 1) params.set("page", String(page));
+  const queryString = params.toString();
+  return queryString ? `/pokemon?${queryString}` : "/pokemon";
 }

@@ -36,7 +36,8 @@ automatically, which is Vercel's default for a Git-connected project.
 - `/pokemon`: one row per species in Pokédex order, 20 per page (`?page=`). Each
   row shows the number, the default form's sprite, the name, the category and
   the type icons; the category and types are hidden below the `md` breakpoint.
-  Invalid page numbers fall back to page 1, and pages past the end are a 404.
+  Invalid page numbers fall back to page 1, and pages past the end show a message
+  with a button back to the list.
 - `/pokemon/[slug]`: detail page. The slug is the species name; an ID such as
   `/pokemon/25` redirects to `/pokemon/pikachu`. Three optional parameters pick
   the variety: `?form=` (`mega`, `mega-x`, `gmax`, `zen`, ...), `?region=`
