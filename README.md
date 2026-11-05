@@ -33,11 +33,14 @@ automatically, which is Vercel's default for a Git-connected project.
 ## Pages
 
 - `/`: landing page with a short intro and a button to the list.
-- `/pokemon`: one row per species in Pokédex order, 20 per page (`?page=`). Each
-  row shows the number, the default form's sprite, the name, the category and
-  the type icons; the category and types are hidden below the `md` breakpoint.
-  Invalid page numbers fall back to page 1, and pages past the end show a message
-  with a button back to the list.
+- `/pokemon`: one row per species, 20 per page. Each row shows the number, the
+  default form's sprite, the name, the category and the type icons; the category
+  and types are hidden below `md` breakpoint. `?q=` searches the names,
+  `?sort=` orders them (`number`, `number-desc`, `name`, `name-desc`) and
+  `?page=` pages through the result. The `#` and `Name` headers sort when
+  clicked, and a dropdown next to the search box does the same. Anything that is
+  left out of the URL means the default. A page with nothing on it (no matches,
+  or a page number past the end) shows a message with a button back.
 - `/pokemon/[slug]`: detail page. The slug is the species name; an ID such as
   `/pokemon/25` redirects to `/pokemon/pikachu`. Three optional parameters pick
   the variety: `?form=` (`mega`, `mega-x`, `gmax`, `zen`, ...), `?region=`
@@ -59,15 +62,19 @@ the whole layout.
   and `pokemon/[slug]/loading.tsx`
 - `src/app/pokemon/page.tsx`: the list page
 - `src/app/pokemon/[slug]/page.tsx`: the detail page
-- `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `DetailHeader`, 
-  `FormsCard`, `GenderBar`, `GenderSwitch`, `OverviewCard`, `PokemonTableSkeleton`,
-  `SiteHeader`, `StatBar`, `StatsCard`, `StatusMessage`
+- `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `DetailHeader`,
+  `FormsCard`, `GenderBar`, `GenderSwitch`, `ListControls`, `OverviewCard`,
+  `PokemonTableSkeleton`, `SiteHeader`, `StatBar`, `StatsCard`, `StatusMessage`
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
-- `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers, the
-  type lookup (form name to types)
+- `src/lib/list-url.ts`: `listHref`, the only place that builds list URLs
+- `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers,
+  the type lookup (form name to types)
 - `src/lib/pokemon-detail.ts`: everything the detail page needs beyond the
   species: the selected variety's data, the other forms for the Forms card
   (`LIMITED_FORMS`, `FORM_LINKS`) and the gender-switch helpers
+- `src/lib/search.ts`: `normalizeQuery` and `searchByName` (search on slugs)
+- `src/lib/sort.ts`: the sort options, `parseSort`, `sortSpecies` and the
+  helpers behind the clickable headers; tested in `sort.test.ts`
 - `src/lib/sprites.ts`: image URL builders
 - `src/lib/variety.ts`: `parseVariety`, `findVariety` and `buildVarietyQuery`,
   which translate between variety names (`meowstic-female-mega`) and URL
@@ -84,6 +91,13 @@ the whole layout.
 - **Types in the list.** Species data has no types; they belong to each form.
   `getTypeLookup` fetches all 18 type pages once (cached) and builds a map from
   form name to types, so the list needs no extra request per row.
+- **Search and sort.** PokéAPI has no search or sort endpoint, so the list
+  fetches every species name (one cached request), then filters (`searchByName`,
+  on the slugs), sorts (`sortSpecies`) and slices out the page in our own code.
+  Only number and name can be sorted, because the category and types aren't in
+  the list of names. `listHref` builds every list URL and leaves out the
+  defaults. The search box and the sort dropdown are one client component
+  (`ListControls`), because each needs the other's value when it changes the URL.
 - **URL parameters.** The detail page picks a variety with `?form=` (`mega`,
   `mega-x`, `gmax`, `zen`, ...), `?region=` (`alola`, `galar`, `hisui`,
   `paldea`) and `?gender=` (`female`). A parameter that is left out means "same
@@ -139,12 +153,17 @@ the whole layout.
   only known at runtime (bar widths) go through inline `style`.
 - **Small screens.** Cards and page padding shrink below `md` (`p-4 md:p-8`,
   `px-4 md:px-8`), and the gender bar drops its fixed label widths there.
-- **Tests.** The URL/variety logic is covered by Vitest (`npm test`). To check a
-  species with unusual form names, add a `makeSpecies` line and put it in
-  `speciesByName`; the round-trip test picks it up.
+- **Tests.** The URL/variety, search, sort and list-URL logic is covered by Vitest
+  (`npm test`). To check a species with unusual form names, add a `makeSpecies`
+  line and put it in `speciesByName`; the round-trip test picks it up.
 
 ## To do
 
-- Search on the list page (by name, driven by the URL like the pagination),
-  then filters
-- Learnsets
+- Shiny toggle next to the big picture
+- Cries: a play button on the detail page
+- Random Pokémon button
+- Type matchups (weaknesses and resistances) on the detail page
+- Evolution lines on the detail page
+- Filters on the list page (by type, by generation)
+- Favorites, stored in the browser, with a favorites page
+- Learnsets on the detail page
