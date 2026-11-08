@@ -7,7 +7,13 @@ import { getArtworkUrl } from "@/lib/sprites";
 import Card from "./Card";
 
 /** The species' other forms; each links to its page via the entry's `href`. */
-export default function FormsCard({ entries }: { entries: FormEntry[] }) {
+export default function FormsCard({
+  entries,
+  shiny,
+}: {
+  entries: FormEntry[];
+  shiny: boolean;
+}) {
   // Nothing to offer (e.g. Ditto, Koraidon): no card at all.
   if (entries.length === 0) return null;
 
@@ -18,7 +24,7 @@ export default function FormsCard({ entries }: { entries: FormEntry[] }) {
           <Link key={entry.key} href={entry.href}>
             <figure className="flex flex-col items-center">
               <Image
-                src={getArtworkUrl(entry.id)}
+                src={getArtworkUrl(entry.id, { shiny })}
                 alt=""
                 width={128}
                 height={128}

@@ -45,9 +45,11 @@ automatically, which is Vercel's default for a Git-connected project.
   `/pokemon/25` redirects to `/pokemon/pikachu`. Three optional parameters pick
   the variety: `?form=` (`mega`, `mega-x`, `gmax`, `zen`, ...), `?region=`
   (`alola`, `galar`, `hisui`, `paldea`) and `?gender=` (`female`; male is the
-  default). A parameter that is left out means "same as the default variety". A
-  combination that doesn't exist redirects to the plain page. The heading sits
-  between the previous and next buttons ( +"DetailHeader"+ ), which link to the
+  default). `?shiny=true` is separate from the variety: it shows the shiny pictures
+  (big picture and Forms card), and normal is the default, so it never appears in
+  the URL otherwise. A parameter that is left out means "same as the default variety".
+  A combination that doesn't exist redirects to the plain page. The heading sits
+  between the previous and next buttons (`DetailHeader`), which link to the
   neighbouring species in Pokédex order and wrap around: the one before #1 is
   the last species, and the one after it is #1.
 
@@ -64,7 +66,8 @@ the whole layout.
 - `src/app/pokemon/[slug]/page.tsx`: the detail page
 - `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `DetailHeader`,
   `FormsCard`, `GenderBar`, `GenderSwitch`, `ListControls`, `OverviewCard`,
-  `PokemonTableSkeleton`, `SiteHeader`, `StatBar`, `StatsCard`, `StatusMessage`
+  `PokemonTableSkeleton`, `ShinyToggle`, `SiteHeader`, `StatBar`, `StatsCard`,
+  `StatusMessage`
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
 - `src/lib/list-url.ts`: `listHref`, the only place that builds list URLs
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers,
@@ -127,6 +130,16 @@ the whole layout.
   because a Mega's learnset comes from the base form's gender. Species where the
   female only looks different (`has_gender_differences`, e.g. Pikachu, Frillish)
   get a switch that only swaps the picture (`?gender=female`, default form only).
+- **Shiny.** `?shiny=true` shows the shiny pictures; the default (normal) is left
+  out of the URL. `ShinyToggle` is a vertical switch styled like `GenderSwitch`,
+  placed to the right of the big picture (the picture itself stays centered). Like
+  the gender switch, the unselected side is a link, not client state. The page
+  builds the toggle's link from the incoming parameters, so form, region and gender
+  survive a toggle. In the other direction, `keepShiny` in `/[slug]/page.tsx` adds
+  `?shiny=true` to the gender switch and Forms card links, so switching gender or
+  form keeps shiny on. The HOME render has the shiny pictures in `shiny/` and
+  `shiny/female/` (the folder order matters), and the female shiny picture exists
+  only where the female one does. The Forms card uses the shiny official artwork.
 - **Images.** The big picture is the Pokémon HOME render, because the female
   pictures only exist there; the Forms card uses the official artwork. Some
   cosmetic forms have no HOME render, which is one more reason they aren't offered.
@@ -159,7 +172,6 @@ the whole layout.
 
 ## To do
 
-- Shiny toggle next to the big picture
 - Cries: a play button on the detail page
 - Random Pokémon button
 - Type matchups (weaknesses and resistances) on the detail page

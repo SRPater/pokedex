@@ -8,18 +8,30 @@ export function getSpriteUrl(id: number): string {
   return `${SPRITES_BASE}/pokemon/${id}.png`;
 }
 
-/** Large official artwork, used for the thumbnails in the Other Forms card. */
-export function getArtworkUrl(id: number): string {
-  return `${SPRITES_BASE}/pokemon/other/official-artwork/${id}.png`;
+/**
+ * Large official artwork, used for the thumbnails in the Other Forms card.
+ * `shiny` picks the shiny version.
+ */
+export function getArtworkUrl(
+  id: number,
+  { shiny = false }: { shiny?: boolean } = {},
+): string {
+  return `${SPRITES_BASE}/pokemon/other/official-artwork/${shiny ? "shiny/" : ""}${id}.png`;
 }
 
 /**
  * Large render (Pokémon HOME style), used for the big picture on the detail page.
- * It's the only style with female pictures (`female` = true), which exist only
- * for species with `has_gender_differences`. Some cosmetic forms have no render.
+ * `female` and `shiny` pick the other versions of the picture. Female pictures
+ * exist only for species with `has_gender_differences`, and the female shiny
+ * picture only where the female one does. Some cosmetic forms have no render.
  */
-export function getRenderUrl(id: number, female = false): string {
-  return `${SPRITES_BASE}/pokemon/other/home/${female ? "female/" : ""}${id}.png`;
+export function getRenderUrl(
+  id: number,
+  { female = false, shiny = false }: { female?: boolean; shiny?: boolean } = {},
+): string {
+  // The folder order matters: shiny/female/25.png, not female/shiny/25.png.
+  const folder = `${shiny ? "shiny/" : ""}${female ? "female/" : ""}`;
+  return `${SPRITES_BASE}/pokemon/other/home/${folder}${id}.png`;
 }
 
 /** Wide type icon in the Scarlet/Violet style; `id` is the type's ID. */

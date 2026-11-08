@@ -27,6 +27,7 @@ import DetailHeader from "@/components/DetailHeader";
 import FormsCard from "@/components/FormsCard";
 import GenderSwitch from "@/components/GenderSwitch";
 import OverviewCard from "@/components/OverviewCard";
+import ShinyToggle from "@/components/ShinyToggle";
 import StatsCard from "@/components/StatsCard";
 
 // Tab title for /pokemon/[slug], e.g. "Charizard | Pokédex" (the " | Pokédex"
@@ -53,11 +54,18 @@ export default async function PokemonDetailPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ form?: string; region?: string; gender?: string }>;
+  searchParams: Promise<{
+    form?: string;
+    region?: string;
+    gender?: string;
+    shiny?: string;
+  }>;
 }) {
   // In current Next.js, params and searchParams are Promises.
   const { slug } = await params;
-  const { form, region, gender } = await searchParams;
+  const { form, region, gender, shiny: shinyParam } = await searchParams;
+  // ?shiny=true shows the shiny pictures; anything else (or nothing) is the normal one.
+  const shiny = shinyParam === "true";
 
   let species;
   try {
@@ -85,8 +93,25 @@ export default async function PokemonDetailPage({
 
   const selectedName = variety.pokemon.name;
   const selectedIsFemale = isFemale(selectedName);
+
+  // Adds ?shiny=true to a link when shiny is on, so switching gender or form keeps it.
+  // The href may or may not have a query already, hence the check for "?".
+  const keepShiny = (href: string) =>
+    shiny ? `${href}${href.includes("?") ? "&" : "?"}shiny=true` : href;
+
   const hrefFor = (name: string) =>
-    `/pokemon/${species.name}${buildVarietyQuery(species, name)}`;
+    keepShiny(`/pokemon/${species.name}${buildVarietyQuery(species, name)}`);
+
+  // The toggle's target: same page and same variety parameters, with shiny flipped.
+  // Built from the incoming parameters so a selected form/region/gender survives.
+  const toggleParams = new URLSearchParams();
+  if (form) toggleParams.set("form", form);
+  if (region) toggleParams.set("region", region);
+  if (gender) toggleParams.set("gender", gender);
+  // Shiny is only written when turning it on; the normal page has no ?shiny.
+  if (!shiny) toggleParams.set("shiny", "true");
+  const toggleQuery = toggleParams.toString();
+  const shinyHref = `/pokemon/${species.name}${toggleQuery ? `?${toggleQuery}` : ""}`;
 
   const [
     { pokemon, selectedId, selectedLabel, otherEntries, genderCounterpart },
@@ -112,25 +137,36 @@ export default async function PokemonDetailPage({
         </h1>
         <p className="text-center text-lg text-gray-500">{getGenus(species)}</p>
       </DetailHeader>
-      <Image
-        src={getRenderUrl(selectedId, showFemale)}
-        alt={getEnglishName(species)}
-        width={256}
-        height={256}
-        className="mx-auto"
-      />
+      {/* The wrapper is exactly as wide as the image (w-64 = 256px) and centered, so the
+          image stays centered on the page. The toggle sits outside its right edge
+          (left-full) and is centered vertically, so it doesn't affect the layout. */}
+      <div className="relative mx-auto w-64">
+        <Image
+          src={getRenderUrl(selectedId, { female: showFemale, shiny })}
+          alt={getEnglishName(species)}
+          width={256}
+          height={256}
+        />
+        <div className="absolute left-full top-1/2 ml-4 -translate-y-1/2">
+          <ShinyToggle shiny={shiny} href={shinyHref} />
+        </div>
+      </div>
       {genderCounterpart && (
         <GenderSwitch
           selected={selectedIsFemale ? "female" : "male"}
-          maleHref={hrefFor(selectedIsFemale ? genderCounterpart : selectedName)}
-          femaleHref={hrefFor(selectedIsFemale ? selectedName : genderCounterpart)}
+          maleHref={hrefFor(
+            selectedIsFemale ? genderCounterpart : selectedName,
+          )}
+          femaleHref={hrefFor(
+            selectedIsFemale ? selectedName : genderCounterpart,
+          )}
         />
       )}
       {pictureOnly && (
         <GenderSwitch
           selected={showFemale ? "female" : "male"}
-          maleHref={`/pokemon/${species.name}`}
-          femaleHref={`/pokemon/${species.name}?gender=female`}
+          maleHref={keepShiny(`/pokemon/${species.name}`)}
+          femaleHref={keepShiny(`/pokemon/${species.name}?gender=female`)}
         />
       )}
       {/* Name the shown form, but only when it adds something beyond the heading. */}
@@ -144,7 +180,15 @@ export default async function PokemonDetailPage({
           <StatsCard stats={pokemon.stats} />
         </div>
 
-        <FormsCard entries={otherEntries} />
+        {/* The entries' hrefs are built in getPokemonDetail, which doesn't know about
+            shiny, so add it here. */}
+        <FormsCard
+          entries={otherEntries.map((entry) => ({
+            ...entry,
+            href: keepShiny(entry.href),
+          }))}
+          shiny={shiny}
+        />
       </div>
     </div>
   );
