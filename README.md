@@ -51,7 +51,8 @@ automatically, which is Vercel's default for a Git-connected project.
   A combination that doesn't exist redirects to the plain page. The heading sits
   between the previous and next buttons (`DetailHeader`), which link to the
   neighbouring species in Pokédex order and wrap around: the one before #1 is
-  the last species, and the one after it is #1.
+  the last species, and the one after it is #1. Under the big picture, a 🔊 button
+  plays the selected form's cry.
 
 Every page has a header (`SiteHeader`, in the root layout) linking to `/` and
 `/pokemon`. `global-error.tsx` doesn't show it on purpose, because it replaces
@@ -64,10 +65,10 @@ the whole layout.
   and `pokemon/[slug]/loading.tsx`
 - `src/app/pokemon/page.tsx`: the list page
 - `src/app/pokemon/[slug]/page.tsx`: the detail page
-- `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `DetailHeader`,
-  `FormsCard`, `GenderBar`, `GenderSwitch`, `ListControls`, `OverviewCard`,
-  `PokemonTableSkeleton`, `ShinyToggle`, `SiteHeader`, `StatBar`, `StatsCard`,
-  `StatusMessage`
+- `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `CryButton`,
+  `DetailHeader`, `FormsCard`, `GenderBar`, `GenderSwitch`, `ListControls`,
+  `OverviewCard`, `PokemonTableSkeleton`, `ShinyToggle`, `SiteHeader`, `StatBar`,
+  `StatsCard`, `StatusMessage`
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
 - `src/lib/list-url.ts`: `listHref`, the only place that builds list URLs
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers,
@@ -143,6 +144,13 @@ the whole layout.
 - **Images.** The big picture is the Pokémon HOME render, because the female
   pictures only exist there; the Forms card uses the official artwork. Some
   cosmetic forms have no HOME render, which is one more reason they aren't offered.
+- **Cries.** The cry belongs to each variety (`pokemon/[name]`, field
+  `cries.latest`, an `.ogg` file on raw.githubusercontent.com), so every form
+  plays its own. `legacy` is null for many Pokémon, so only `latest` is used, and
+  the button is hidden when a form has no cry. `CryButton` is a client component
+  that creates a new `Audio` on each click, so nothing downloads until someone
+  asks and the sound always matches the form on screen. The button shows only the
+  emoji (`aria-hidden`); the label is `sr-only` and also the `title` tooltip.
 - **Learnsets (not built).** A Mega's learnset comes from the base form, so it
   depends on the gender being viewed.
 - **Names.** English display names come from the species `names` and the form
@@ -172,7 +180,6 @@ the whole layout.
 
 ## To do
 
-- Cries: a play button on the detail page
 - Random Pokémon button
 - Type matchups (weaknesses and resistances) on the detail page
 - Evolution lines on the detail page

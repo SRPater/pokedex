@@ -44,6 +44,12 @@ export type Pokemon = {
   types: { type: NamedResource }[];
   abilities: { is_hidden: boolean; ability: NamedResource }[];
   stats: { base_stat: number; stat: NamedResource }[];
+  /**
+   * Links to the cry audio (.ogg). `latest` is the current cry; `legacy` is the
+   * older one and is null for many Pokémon, so we only use `latest`. Typed as
+   * nullable in case a form has no cry at all.
+   */
+  cries: { latest: string | null; legacy: string | null };
 };
 
 type PokemonTypeData = {

@@ -23,6 +23,7 @@ import {
   isFemale,
 } from "@/lib/variety";
 
+import CryButton from "@/components/CryButton";
 import DetailHeader from "@/components/DetailHeader";
 import FormsCard from "@/components/FormsCard";
 import GenderSwitch from "@/components/GenderSwitch";
@@ -137,6 +138,7 @@ export default async function PokemonDetailPage({
         </h1>
         <p className="text-center text-lg text-gray-500">{getGenus(species)}</p>
       </DetailHeader>
+
       {/* The wrapper is exactly as wide as the image (w-64 = 256px) and centered, so the
           image stays centered on the page. The toggle sits outside its right edge
           (left-full) and is centered vertically, so it doesn't affect the layout. */}
@@ -151,6 +153,14 @@ export default async function PokemonDetailPage({
           <ShinyToggle shiny={shiny} href={shinyHref} />
         </div>
       </div>
+
+      {/* Some form may have no cry (the field is nullable), so only show the button when there is one. */ }
+      {pokemon.cries.latest && (
+        <div className="mt-4 flex justify-center">
+          <CryButton src={pokemon.cries.latest} />
+        </div>
+      )}
+
       {genderCounterpart && (
         <GenderSwitch
           selected={selectedIsFemale ? "female" : "male"}
@@ -162,6 +172,7 @@ export default async function PokemonDetailPage({
           )}
         />
       )}
+
       {pictureOnly && (
         <GenderSwitch
           selected={showFemale ? "female" : "male"}
@@ -169,6 +180,7 @@ export default async function PokemonDetailPage({
           femaleHref={keepShiny(`/pokemon/${species.name}?gender=female`)}
         />
       )}
+
       {/* Name the shown form, but only when it adds something beyond the heading. */}
       {selectedLabel && selectedLabel !== getEnglishName(species) && (
         <p className="mt-2 text-center text-gray-500">{selectedLabel}</p>

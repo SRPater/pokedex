@@ -28,15 +28,24 @@ export function ButtonLink({
 /** A real button for actions (retry, reload, ...). */
 export function Button({
   onClick,
+  title,
   children,
   className = "",
 }: {
   onClick: () => void;
+  // Hover tooltip. Matters for icon-only buttons, where the visible content
+  // doesn't say what the button does.
+  title?: string;
   children: ReactNode;
   className?: string;
 }) {
   return (
-    <button type="button" onClick={onClick} className={`${STYLES} ${className}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className={`${STYLES} ${className}`}
+    >
       {children}
     </button>
   );
