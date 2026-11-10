@@ -171,7 +171,6 @@ async function PokemonList({
                       alt={getEnglishName(s)}
                       width={48}
                       height={48}
-                      unoptimized
                     />
                   </div>
                 </td>
@@ -198,7 +197,6 @@ async function PokemonList({
                         width={60}
                         height={60}
                         className="h-9 w-9"
-                        unoptimized // already a small 60x60 file; see the sprite above
                       />
                     ))}
                   </div>

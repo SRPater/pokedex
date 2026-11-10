@@ -144,10 +144,12 @@ the whole layout.
 - **Images.** The big picture is the Pokémon HOME render, because the female
   pictures only exist there; the Forms card uses the official artwork. Some
   cosmetic forms have no HOME render, which is one more reason they aren't offered.
-  The list's sprites and type icons are `unoptimized`, so the browser loads them
-  straight from GitHub: they are tiny files, and every image that goes through
-  `/_next/image` counts as a Vercel image transformation (the free plan allows
-  5,000 per billing period).
+  All images are `unoptimized` (`images.unoptimized` in `next.config.ts`), so the
+  browser loads them straight from GitHub instead of through `/_next/image`. Every
+  image that goes through the optimizer counts as a Vercel image transformation
+  (the free plan allows 5,000 per billing period), and a burst of traffic on the
+  new domain used that up in one day. The cost is no WebP/AVIF conversion, so images
+  are a bit heavier.
 - **Cries.** The cry belongs to each variety (`pokemon/[name]`, field
   `cries.latest`, an `.ogg` file on raw.githubusercontent.com), so every form
   plays its own. `legacy` is null for many Pokémon, so only `latest` is used, and
