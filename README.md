@@ -4,7 +4,7 @@ A small Next.js (App Router) app built on [PokéAPI](https://pokeapi.co), made
 for learning Next.js. There is no database: all data comes from the API and is
 cached by Next.js for 24 hours.
 
-Live: https://pokedex-srp-ater.vercel.app
+Live: https://pokedex.srpater.nl
 
 ## Running it
 
