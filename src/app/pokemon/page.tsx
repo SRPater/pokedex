@@ -162,11 +162,16 @@ async function PokemonList({
                 </td>
                 <td className="p-2">
                   <div className="flex justify-center">
+                    {/* unoptimized: these sprites are tiny PNGs, so resizing them gains
+                        almost nothing, but every one would count as a Vercel image
+                        transformation (the free plan allows 5,000). The browser loads
+                        them straight from GitHub instead. */}
                     <Image
                       src={getSpriteUrl(s.id)}
                       alt={getEnglishName(s)}
                       width={48}
                       height={48}
+                      unoptimized
                     />
                   </div>
                 </td>
@@ -193,6 +198,7 @@ async function PokemonList({
                         width={60}
                         height={60}
                         className="h-9 w-9"
+                        unoptimized // already a small 60x60 file; see the sprite above
                       />
                     ))}
                   </div>
