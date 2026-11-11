@@ -1,6 +1,6 @@
 import { ButtonLink } from "@/components/Button";
 
-// Landing page for /. Deliberately minimal for now.
+// Deliberately minimal for now.
 export default function HomePage() {
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col items-center px-8 py-24 text-center">
@@ -9,8 +9,11 @@ export default function HomePage() {
         Browse every Pokémon species: stats, types, abilities and alternate
         forms, powered by PokéAPI.
       </p>
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
         <ButtonLink href="/pokemon">Browse the Pokédex</ButtonLink>
+        <ButtonLink href="/pokemon/random" prefetch={false}>
+          Random Pokémon
+        </ButtonLink>
       </div>
     </div>
   );

@@ -148,6 +148,8 @@ export default async function PokemonDetailPage({
           alt={getEnglishName(species)}
           width={256}
           height={256}
+          // Above the fold and the largest element, so don't lazy-load it.
+          loading="eager"
         />
         <div className="absolute left-full top-1/2 ml-4 -translate-y-1/2">
           <ShinyToggle shiny={shiny} href={shinyHref} />

@@ -32,7 +32,8 @@ automatically, which is Vercel's default for a Git-connected project.
 
 ## Pages
 
-- `/`: landing page with a short intro and a button to the list.
+- `/`: landing page with a short intro, a button to the list and a "Random
+  Pokémon" button.
 - `/pokemon`: one row per species, 20 per page. Each row shows the number, the
   default form's sprite, the name, the category and the type icons; the category
   and types are hidden below `md` breakpoint. `?q=` searches the names,
@@ -53,6 +54,9 @@ automatically, which is Vercel's default for a Git-connected project.
   neighbouring species in Pokédex order and wrap around: the one before #1 is
   the last species, and the one after it is #1. Under the big picture, a 🔊 button
   plays the selected form's cry.
+- `/pokemon/random`: not a page but a route handler (`route.ts`). It picks a
+  random Pokédex number and redirects to `/pokemon/<number>`, which redirects
+  to the name URL.
 
 Every page has a header (`SiteHeader`, in the root layout) linking to `/` and
 `/pokemon`. `global-error.tsx` doesn't show it on purpose, because it replaces
@@ -69,6 +73,7 @@ the whole layout.
   `DetailHeader`, `FormsCard`, `GenderBar`, `GenderSwitch`, `ListControls`,
   `OverviewCard`, `PokemonTableSkeleton`, `ShinyToggle`, `SiteHeader`, `StatBar`,
   `StatsCard`, `StatusMessage`
+- `src/app/pokemon/random/route.ts`: the random redirect
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
 - `src/lib/list-url.ts`: `listHref`, the only place that builds list URLs
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers,
@@ -102,6 +107,12 @@ the whole layout.
   the list of names. `listHref` builds every list URL and leaves out the
   defaults. The search box and the sort dropdown are one client component
   (`ListControls`), because each needs the other's value when it changes the URL.
+- **Random Pokémon.** A link to `/pokemon/random`, a route handler that reads the
+  species count (the same cached request `getNeighbours` uses) and redirects to a
+  random number, so new generations are picked up without code changes. It's a
+  plain link, so it works wihtout JavaScript. The landing page's `ButtonLink`
+  passes `prefetch={false}`, so the pick is made on each click and not reused
+  from a prefetch.
 - **URL parameters.** The detail page picks a variety with `?form=` (`mega`,
   `mega-x`, `gmax`, `zen`, ...), `?region=` (`alola`, `galar`, `hisui`,
   `paldea`) and `?gender=` (`female`). A parameter that is left out means "same
@@ -186,7 +197,6 @@ the whole layout.
 
 ## To do
 
-- Random Pokémon button
 - Type matchups (weaknesses and resistances) on the detail page
 - Evolution lines on the detail page
 - Filters on the list page (by type, by generation)

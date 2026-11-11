@@ -10,16 +10,23 @@ const STYLES =
 export function ButtonLink({
   href,
   title,
+  prefetch,
   children,
   className = "",
 }: {
   href: string;
   title?: string;
+  // Off for links that must be evaluated on click (like /pokemon/random).
+  prefetch?: boolean;
   children: ReactNode;
   className?: string;
 }) {
   return (
-    <Link href={href} title={title} className={`${STYLES} ${className}`}>
+    <Link
+      href={href}
+      title={title}
+      prefetch={prefetch}
+      className={`${STYLES} ${className}`}>
       {children}
     </Link>
   );
