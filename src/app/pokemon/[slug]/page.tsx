@@ -30,6 +30,7 @@ import GenderSwitch from "@/components/GenderSwitch";
 import OverviewCard from "@/components/OverviewCard";
 import ShinyToggle from "@/components/ShinyToggle";
 import StatsCard from "@/components/StatsCard";
+import TypeMatchupsCard from "@/components/TypeMatchupsCard";
 
 // Tab title for /pokemon/[slug], e.g. "Charizard | Pokédex" (the " | Pokédex"
 // comes from the template in the root layout).
@@ -115,7 +116,14 @@ export default async function PokemonDetailPage({
   const shinyHref = `/pokemon/${species.name}${toggleQuery ? `?${toggleQuery}` : ""}`;
 
   const [
-    { pokemon, selectedId, selectedLabel, otherEntries, genderCounterpart },
+    {
+      pokemon,
+      selectedId,
+      selectedLabel,
+      otherEntries,
+      genderCounterpart,
+      typeMatchups,
+    },
     { previous, next },
   ] = await Promise.all([
     getPokemonDetail(species, variety),
@@ -156,7 +164,7 @@ export default async function PokemonDetailPage({
         </div>
       </div>
 
-      {/* Some form may have no cry (the field is nullable), so only show the button when there is one. */ }
+      {/* Some form may have no cry (the field is nullable), so only show the button when there is one. */}
       {pokemon.cries.latest && (
         <div className="mt-4 flex justify-center">
           <CryButton src={pokemon.cries.latest} />
@@ -193,6 +201,8 @@ export default async function PokemonDetailPage({
           <OverviewCard species={species} pokemon={pokemon} />
           <StatsCard stats={pokemon.stats} />
         </div>
+
+        <TypeMatchupsCard matchups={typeMatchups} />
 
         {/* The entries' hrefs are built in getPokemonDetail, which doesn't know about
             shiny, so add it here. */}

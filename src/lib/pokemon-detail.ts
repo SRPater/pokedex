@@ -7,7 +7,9 @@ import {
   type PokemonForm,
   type Pokemon,
   type PokemonSpecies,
+  getDamageFrom,
 } from "./pokeapi";
+import { combineMatchups } from "./type-matchups";
 import {
   buildVarietyQuery,
   getGender,
@@ -26,6 +28,20 @@ export type FormEntry = {
   href: string;
 };
 
+export type TypeMatchupEntry = {
+  /** The attacking type, e.g. "water". */
+  name: string;
+  /** Damage multiplier of that type against the selected form: 4, 2, 0.5, 0.25, or 0. */
+  multiplier: number;
+};
+
+/** Each list is sorted strongest first. Neutral types (x1) are left out. */
+export type TypeMatchups = {
+  weak: TypeMatchupEntry[];
+  resists: TypeMatchupEntry[];
+  immune: TypeMatchupEntry[];
+};
+
 export type PokemonDetail = {
   /** Data of the selected form (types, stats, ...). */
   pokemon: Pokemon;
@@ -37,6 +53,8 @@ export type PokemonDetail = {
   otherEntries: FormEntry[];
   /** The other gender's variety, when the male/female switch applies. */
   genderCounterpart: string | null;
+  /** The type matchups for the selected form. */
+  typeMatchups: TypeMatchups;
 };
 
 // Species whose extra forms are mostly cosmetic or in-game modes. For these, the
@@ -120,6 +138,36 @@ export async function getPokemonDetail(
     Promise.all(offered.map((v) => getPokemonForm(v.pokemon.name))),
   ]);
 
+  // The type names only exist once the Pokémon has arrived, so this can't join the
+  // Promise.all above. getDamageFrom comes from the cache: getTypeLookup fetches the same URLs.
+  const types = pokemon.types.map((t) => {
+    return t.type.name;
+  });
+  const matchups = await Promise.all(types.map((t) => getDamageFrom(t)));
+  const combinedMatchups = combineMatchups(matchups);
+  const weak: TypeMatchupEntry[] = [];
+  const resists: TypeMatchupEntry[] = [];
+  const immune: TypeMatchupEntry[] = [];
+
+  // Sort the multipliers into groups. x1 is skipped: it means a weakness and a
+  // resistance cancelled each other out, which isn't worth showing. The check for 0
+  // comes before "below 1", because 0 is also below 1.
+  for (const [name, multiplier] of combinedMatchups) {
+    if (multiplier === 1) continue;
+    if (multiplier === 0) {
+      immune.push({ name, multiplier });
+    } else if (multiplier > 1) {
+      weak.push({ name, multiplier });
+    } else {
+      resists.push({ name, multiplier });
+    }
+  }
+
+  // Worst weaknesses first (x4 before x2).
+  weak.sort((a, b) => b.multiplier - a.multiplier);
+  // Strongest resistances first (x1/4 before x1/2).
+  resists.sort((a, b) => a.multiplier - b.multiplier);
+
   // Label of a form without its gender, since the gender switch says that.
   const labelFor = (name: string, form: PokemonForm | null) => {
     const label = getFormName(form, species);
@@ -139,6 +187,7 @@ export async function getPokemonDetail(
     selectedLabel: labelFor(selectedName, selectedForm),
     otherEntries,
     genderCounterpart: getGenderCounterpart(species, selectedName),
+    typeMatchups: { weak, resists, immune },
   };
 }
 

@@ -56,6 +56,12 @@ type PokemonTypeData = {
   id: number;
   name: string;
   pokemon: { slot: number; pokemon: NamedResource }[];
+  // Only the "_from" lists: a Pokémon's weaknesses and resistances depend on what hits it.
+  damage_relations: {
+    double_damage_from: NamedResource[];
+    half_damage_from: NamedResource[];
+    no_damage_from: NamedResource[];
+  };
 };
 
 /** One type of a Pokémon, with the ID that its icon URL needs. */
@@ -103,7 +109,9 @@ export function getSpeciesList(
 }
 
 /** Every species (name and URL only) in Pokédex order; used for searching. */
-export async function getAllSpeciesNames(): Promise<SpeciesListResponse["results"]> {
+export async function getAllSpeciesNames(): Promise<
+  SpeciesListResponse["results"]
+> {
   // The API has no search endpoint, so we fetch the whole list (1025 entries, one
   // cached request) and filter it ourselves. The limit just has to be above the count.
   const { results } = await getSpeciesList(2000, 0);
@@ -157,6 +165,26 @@ export function getPokemon(name: string): Promise<Pokemon> {
 /** A type and every Pokémon form that has it; used to build the type lookup. */
 function getType(name: string): Promise<PokemonTypeData> {
   return fetchFromApi<PokemonTypeData>(`type/${name}`);
+}
+
+/** The attacking types a type takes double, half or no damage from, as plain names. */
+export type DamageFrom = {
+  double: string[];
+  half: string[];
+  none: string[];
+};
+
+export async function getDamageFrom(name: string): Promise<DamageFrom> {
+  // Same URL as getTypeLookup uses, so this comes from the cache, not a new request.
+  const { damage_relations } = await getType(name);
+  // We only need the names; the URLs in NamedResource are of no use here.
+  const names = (list: NamedResource[]) => list.map((t) => t.name);
+
+  return {
+    double: names(damage_relations.double_damage_from),
+    half: names(damage_relations.half_damage_from),
+    none: names(damage_relations.no_damage_from),
+  };
 }
 
 /** Extracts the trailing ID from a PokéAPI URL, e.g. ".../pokemon/25/" -> 25. */
@@ -225,6 +253,18 @@ const TYPE_NAMES = [
   "dark",
   "fairy",
 ];
+
+/**
+ * A type's ID, which its icon URL needs. The ID is the position in TYPE_NAMES plus
+ * one, because the list follows PokéAPI's own order (normal is 1, fairy is 18). If
+ * PokéAPI adds a regular type, add it to TYPE_NAMES too.
+ */
+export function getTypeId(name: string): number {
+  const index = TYPE_NAMES.indexOf(name);
+  // Fail loudly: without this an unknown name would give ID 0 and a broken icon with no clue why.
+  if (index === -1) throw new Error(`Unknown Pokémon type: "${name}"`);
+  return index + 1;
+}
 
 /** Maps a Pokémon (or form) name to its types, primary type first. */
 export async function getTypeLookup(): Promise<Map<string, PokemonTypeInfo[]>> {

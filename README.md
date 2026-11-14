@@ -72,19 +72,24 @@ the whole layout.
 - `src/components/`: `Button` (`Button` and `ButtonLink`), `Card`, `CryButton`,
   `DetailHeader`, `FormsCard`, `GenderBar`, `GenderSwitch`, `ListControls`,
   `OverviewCard`, `PokemonTableSkeleton`, `ShinyToggle`, `SiteHeader`, `StatBar`,
-  `StatsCard`, `StatusMessage`
+  `StatsCard`, `StatusMessage`, `TypeMatchupsCard`
 - `src/app/pokemon/random/route.ts`: the random redirect
 - `src/lib/display.ts`: formatting, labels, bar scales, color classes
 - `src/lib/list-url.ts`: `listHref`, the only place that builds list URLs
 - `src/lib/pokeapi.ts`: API types, the shared fetch helper and fetchers, name helpers,
-  the type lookup (form name to types)
+  the type lookup (form name to types), `getDamageFrom` (what a type, takes double,
+  half or no damage from) and `getTypeId` (a type's ID, for its icon)
 - `src/lib/pokemon-detail.ts`: everything the detail page needs beyond the
   species: the selected variety's data, the other forms for the Forms card
-  (`LIMITED_FORMS`, `FORM_LINKS`) and the gender-switch helpers
+  (`LIMITED_FORMS`, `FORM_LINKS`), the type matchups grouped into weak, resists
+  and immune, and the gender-switch helpers
 - `src/lib/search.ts`: `normalizeQuery` and `searchByName` (search on slugs)
 - `src/lib/sort.ts`: the sort options, `parseSort`, `sortSpecies` and the
   helpers behind the clickable headers; tested in `sort.test.ts`
 - `src/lib/sprites.ts`: image URL builders
+- `src/lib/type-matchups.ts`: `combineMatchups`, which multiplies the damage
+  relations of one or two types into one multiplier per attacking type; tested in
+  `type-matchups.test.ts`
 - `src/lib/variety.ts`: `parseVariety`, `findVariety` and `buildVarietyQuery`,
   which translate between variety names (`meowstic-female-mega`) and URL
   parameters (`?form=mega&gender=female`); tested in `variety.test.ts`
@@ -136,6 +141,17 @@ the whole layout.
   `FORM_LINKS` gives species with two base looks (Urshifu, Darmanitan, Toxtricity)
   their own list of links per selected form. Both tables use variety names, so they
   don't depend on the URL scheme.
+- **Type matchups.** The Type Matchups card shows what the selected form is weak to
+  (x4, then x2), resists (x1/4, then x1/2) and is immune to, so it follows the
+  form, region and gender in the URL. `getDamageFrom` reads the `damage_relations`
+  of each of the form's types from the same type pages `getTypeLookup` fetches, so
+  they come from the cache. `combineMatchups` multiplies the factors type by type;
+  they are only 0, 0.5 and 2, so the products are exact, and an immunity (0) stays
+  0, so it beats a weakness. Neutral (x1) is left out, including a weakness
+  cancelled by a resistance. Immunities show no multiplier, because the heading
+  says it. The wide type icon is used from `md` up and the small one below, both
+  in the markup with CSS picking one. An icon needs the type's ID, which is its
+  position in `TYPE_NAMES` plus one (`getTypeId`, which throws for an unknown name).
 - **Gender.** Species with separate gender varieties (Meowstic, Indeedee,
   Oinkologne, Basculegion) get a ♂/♀ switch under the artwork that links to the
   other gender's variety, so stats and abilities follow. It also shows on Megas,
@@ -191,13 +207,13 @@ the whole layout.
   only known at runtime (bar widths) go through inline `style`.
 - **Small screens.** Cards and page padding shrink below `md` (`p-4 md:p-8`,
   `px-4 md:px-8`), and the gender bar drops its fixed label widths there.
-- **Tests.** The URL/variety, search, sort and list-URL logic is covered by Vitest
-  (`npm test`). To check a species with unusual form names, add a `makeSpecies`
-  line and put it in `speciesByName`; the round-trip test picks it up.
+- **Tests.** The URL/variety, search, sort, list-URL, type-matchup and type-ID logic
+  is covered by Vitest (`npm test`). To check a species with unusual form names,
+  add a `makeSpecies` line and put it in `speciesByName`; the round-trip test picks
+  it up.
 
 ## To do
 
-- Type matchups (weaknesses and resistances) on the detail page
 - Evolution lines on the detail page
 - Filters on the list page (by type, by generation)
 - Favorites, stored in the browser, with a favorites page

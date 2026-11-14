@@ -75,3 +75,17 @@ export function formatSlug(slug: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
+
+// The multipliers that combining one or two types can produce. Fractions are
+// written as symbols, since "x0.25" reas worse than "x¼" in a narrow column.
+const MULTIPLIER_LABELS: Record<number, string> = {
+  4: "x4",
+  2: "x2",
+  0.5: "x½",
+  0.25: "x¼",
+};
+
+/** A damage multiplier as shown in the Type Matchups card, e.g. 0.25 -> "x¼". */
+export function formatMultiplier(multiplier: number): string {
+  return MULTIPLIER_LABELS[multiplier];
+}
