@@ -36,7 +36,7 @@ There is no database: all data comes from the API and is cached by Next.js for
 ### Installation
 
 ```bash
-git clone https://github.com/SRPater/pokedex
+git clone https://github.com/SRPater/pokedex.git
 cd pokedex
 npm install
 ```
