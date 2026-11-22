@@ -152,6 +152,82 @@ nothing downloads until someone asks and the sound always matches the form on
 screen. The button shows only the emoji (`aria-hidden`); the label is `sr-only`
 and also the `title` tooltip.
 
+### Evolution card
+
+The card shows how the species evolves: one row per path through the evolution
+chain, each stage a small sprite (it follows the shiny toggle) with its name,
+linked to its own page. The stage on screen is not a link, which is how it is
+marked. Rows sit in two columns from `lg` up with a thin line between them, and a
+single row is centered. A species that doesn't evolve gets no card.
+
+**From chain to rows** (`lib/evolution.ts`). `getEvolutionPathsForPage` does these
+steps in order, and each one is a small tested function:
+
+- The chain is a tree (Eevee has eight branches) and is the same for the whole
+  family. `getEvolutionPaths` turns it into one list of stages per path, and
+  `getPathsThrough` keeps the paths through the species on screen (Jolteon shows
+  Eevee → Jolteon, Eevee shows all eight).
+- A stage can have several entries (`evolution_details`): one per game where the
+  rules changed, or alternatives. `getCurrentDetails` keeps the ones marked
+  `is_default`. Leafeon has six entries and one is current; regional alternatives
+  are all marked, so they all stay.
+- Regional forms: an entry's `required_pokemon_form` and `evolved_pokemon_form` say
+  which form it goes from and to, and `null` means the default form.
+  `getFormPaths` makes one path per combination that exists and only joins steps
+  whose forms fit together (Obstagoon only follows Galarian Linoone). `region` is
+  not used for this: it is a condition ("In Alola"), because Alolan Raichu evolves
+  from a normal Pikachu, while Alolan Ninetales comes from Alolan Vulpix and has
+  none.
+- `getPathsForForm` keeps the paths that contain the form on screen (Raichu: the
+  normal path, Alolan Raichu: the Alolan one, Pikachu: both). A form that is on no
+  path (Mega Raichu X) shows the species' own chain. The fallback uses the species
+  name and not the default variety's, because a form is named after the species
+  when the API leaves it `null`, while the variety on screen can be named
+  differently.
+- `collapseUnknownForms` turns a form that isn't a variety of its species into the
+  species' own form and merges the paths that become the same. This gives Alcremie
+  one path instead of 63: its entries lead to cosmetic forms without a page or a
+  picture. Only species that have a form of their own are fetched for this.
+- `fillFormIds` gives regional forms their own Pokémon ID for the sprite (Alolan
+  Raichu is 10100). A species' own form uses the ID in the chain's URL, which is
+  its default form's ID.
+- Names, conditions and links are added last, and only for the stages that are
+  shown. Links are built like the Forms card's (`buildVarietyQuery`), and the page
+  adds `?shiny`.
+
+### Evolution conditions
+
+Under each name (not the first stage's) a short list says how that stage is
+reached, one condition per line and as short as possible: "Level 16", "Thunder
+Stone", "Trade for Shelmet". `getConditions` (`lib/conditions.ts`) builds it.
+
+- The lines go under the evolved stage and not on the arrows, because there is no
+  room between the sprites.
+- A level-up always starts with "Level up" or its level. Without it, "Holding
+  Razor Fang" and "Nighttime" (Gliscor) would read as if holding the item at
+  night were enough.
+- English names of items, moves, species and locations come from the API, with the
+  same `findEnglish` helper as the other names. Each distinct one is fetched once
+  for the shown entries (cached), and a missing name shows the raw one, so a
+  condition is never hidden.
+- Some triggers have fixed lines written by hand, because the API only has their
+  names. "Spin" is the whole condition: Alcremie's 63 entries are merged, so the
+  other fields of the one that is left (a Sweet, a time of day) would be wrong for
+  the others. The other fixed triggers are followed by the entry's other fields
+  (Kingambit: "Defeat 3 leader Bisharp", "Holding Leader's Crest"). `use-move`
+  (Annihilape) is a level-up after using the move; the two style triggers (Wyrdeer,
+  Overqwil) are not.
+- A chance ("99% chance") comes from `condition_expression.percentage_chance`.
+  It tells Wurmple's, Maushold's and Dudunsparce's entries apart. The formula
+  itself is not shown.
+- The natures of Toxel → Toxtricity are too many to list under a sprite, so the
+  line only names the form ("Amped nature", "Low Key nature") and the full list is
+  a tooltip. A tooltip only shows on hover, so it is not there on a phone.
+- Fields that no current entry uses are left out: beauty, affection and the Moss or
+  Ice Rock. This was checked against PokéAPI's `pokemon_evolution.csv` for rows with
+  `is_default` set to 1. When a current entry starts to use one, add the field and
+  a line for it.
+
 ### Titles
 
 The root layout sets a title template (`%s | Pokédex`). The list page exports a
@@ -161,8 +237,9 @@ English name; unknown slugs keep the default title.
 ## Images
 
 The big picture is the Pokémon HOME render, because the female pictures only
-exist there; the Forms card uses the official artwork. Some cosmetic forms have no
-HOME render, which is one more reason they aren't offered.
+exist there; the Forms card uses the official artwork, and the Evolution card the
+small sprites (`getSpriteUrl`, which also has a shiny version). Some cosmetic
+forms have no HOME render, which is one more reason they aren't offered.
 
 All images are `unoptimized` (`images.unoptimized` in `next.config.ts`), so the
 browser loads them straight from GitHub instead of through `/_next/image`. Every
@@ -187,12 +264,14 @@ doesn't show the site header on purpose, because it replaces the whole layout.
   only known at runtime (bar widths) go through inline `style`.
 - **Small screens:** cards and page padding shrink below `md` (`p-4 md:p-8`,
   `px-4 md:px-8`), and the gender bar drops its fixed label widths there.
+- **Card titles:** centered, in `Card`, so it holds for every card.
 
 ## Tests
 
-The URL/variety, search, sort, list-URL, type-matchup and type-ID logic is
-covered by Vitest (`npm test`). To check a species with unusual form names, add a
-`makeSpecies` line and put it in `speciesByName`; the round-trip test picks it up.
+The URL/variety, search, sort, list-URL, type-matchup, type-ID, sprite-URL,
+evolution-path and evolution-condition logic is covered by Vitest (`npm test`).
+To check a species with unusual form names, add a `makeSpecies` line and put it
+in `speciesByName`; the round-trip test picks it up.
 
 ## Not built yet
 

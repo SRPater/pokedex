@@ -25,6 +25,8 @@ export type PokemonSpecies = {
   has_gender_differences: boolean;
   /** 3 (hardest to catch) to 255 (easiest). */
   capture_rate: number;
+  /** Link to the evolution chain this species belongs to (shared by the whole family). */
+  evolution_chain: { url: string };
   color: NamedResource;
   names: LocalizedName[];
   genera: { genus: string; language: NamedResource }[];
@@ -32,6 +34,24 @@ export type PokemonSpecies = {
 };
 
 export type PokemonForm = {
+  name: string;
+  names: LocalizedName[];
+};
+
+/** An item as the evolution labels need it: its API name and its names per language. */
+export type Item = {
+  name: string;
+  names: LocalizedName[];
+};
+
+/** A move as the evolution label needs it: its API name and its names per language. */
+export type Move = {
+  name: string;
+  names: LocalizedName[];
+};
+
+/** A location as the evolution labels need it: its API name and its names per language. */
+export type Location = {
   name: string;
   names: LocalizedName[];
 };
@@ -62,6 +82,90 @@ type PokemonTypeData = {
     half_damage_from: NamedResource[];
     no_damage_from: NamedResource[];
   };
+};
+
+/**
+ * One way a stage can evolve. A stage can have several entries: one per game where
+ * the rules changed (Leafeon has six), or alternatives such as a regional form
+ * (Raichu). The API sends about 30 fields per entry and uses `null` for "doesn't
+ * apply", so we only list the fields we use so far and add the rest when we write
+ * the labels.
+ */
+export type EvolutionDetail = {
+  /** Picks the current rule when a stage has one entry per game (Leafeon: one `true`). */
+  is_default: boolean;
+  /** The form of the previous stage that evolves, e.g. "vulpix-alola"; `null` means the default form. */
+  required_pokemon_form: NamedResource | null;
+  /** The form that comes out, e.g. "raichu-alola"; `null` means the default form. */
+  evolved_pokemon_form: NamedResource | null;
+  /** What kind of evolution this is: "level-up", "use-item", "trade", ... (18 in all). */
+  trigger: NamedResource;
+  /** The item to use, for the "use-item" trigger. */
+  item: NamedResource | null;
+  /** The item the Pokémon has to hold (Kingdra: Dragon Scale), apart from one it is used with. */
+  held_item: NamedResource | null;
+  /** The level to reach (Charmeleon: 16). */
+  min_level: number | null;
+  /** The friendship needed (Espeon: 160). */
+  min_happiness: number | null;
+  /** "day", "night" or "dusk"; an empty string, not null, when the time doesn't matter. */
+  time_of_day: string;
+  /** The damage to take before evolving (Runerigus: 49); for "take-damage" and "recoil-damage". */
+  min_damage_taken: number | null;
+  /** The number of steps to walk before evolving. */
+  min_steps: number | null;
+  /** 1 for female, 2 for male; null when the gender doesn't matter (Kirlia -> Gallade: 2). */
+  gender: 1 | 2 | null;
+  /** The move the Pokémon has to know (Mamoswine: Ancient Power). */
+  known_move: NamedResource | null;
+  /** The type of a move it has to know, whichever move it is (Sylveon: fairy). */
+  known_move_type: NamedResource | null;
+  /** The move to use, for the move triggers (Annihilape: Rage Fist). */
+  used_move: NamedResource | null;
+  /** How many times `used_move` has to be used (20). */
+  min_move_count: 20 | null;
+  /** 1 when Attack is higher than Defense, -1 when lower, 0 when equal (Tyrogue). */
+  relative_physical_stats: 1 | 0 | -1 | null;
+  /** True when it has to be raining (Goodra). */
+  needs_overworld_rain: boolean;
+  /** True when the console has to be held upside down (Malamar). */
+  turn_upside_down: boolean;
+  /** True when another player has to be connected (Finizen -> Palafin, in an Union Circle). */
+  needs_multiplayer: boolean;
+  /** The region the evolution has to happen in (Alolan Raichu: "alola"). */
+  region: NamedResource | null;
+  /** The type of a Pokémon that has to be in the party (Pangoro: dark). */
+  party_type: NamedResource | null;
+  /** The species it has to be traded for (Karrablast: Shelmet). */
+  trade_species: NamedResource | null;
+  /** The species that has to be in the party (Mantyke: Remoraid). */
+  party_species: NamedResource | null;
+  /** The place it has to happen in (Runerigus: Dusty Bowl). */
+  location: NamedResource | null;
+  /** The natures that can evolve (Toxel -> Toxtricity: 13 for Amped, 12 for Low Key). */
+  allowed_natures: NamedResource[] | null;
+  /**
+   * Extra rules the other fields can't say. The API also has the formula itself, but
+   * we only use the chance: Wurmple's Silcoon and Cascoon are 50% each, Maushold's two
+   * forms 99% and 1%. `null` chance for Alcremie's spin, whose formula we don't show.
+   */
+  condition_expression: { percentage_chance: number | null } | null;
+};
+
+/**
+ * One stage of an evolution chain. `evolves_to` holds the next stages, so the chain
+ * is a tree (Eevee has 8 branches), not a line. `evolution_details` says how this
+ * stage is reached from the one before it, and is empty for the first stage.
+ */
+export type ChainLink = {
+  species: NamedResource;
+  evolution_details: EvolutionDetail[];
+  evolves_to: ChainLink[];
+};
+
+type EvolutionChain = {
+  id: number;
+  chain: ChainLink;
 };
 
 /** One type of a Pokémon, with the ID that its icon URL needs. */
@@ -162,6 +266,26 @@ export function getPokemon(name: string): Promise<Pokemon> {
   return fetchFromApi<Pokemon>(`pokemon/${name}`);
 }
 
+/** An evolution chain by ID; the ID is in the species' `evolution_chain.url`. */
+export function getEvolutionChain(id: number): Promise<EvolutionChain> {
+  return fetchFromApi<EvolutionChain>(`evolution-chain/${id}`);
+}
+
+/** An item by name ("thunder-stone"), as it appears in an evolution entry's `item.name`. */
+export function getItem(name: string): Promise<Item> {
+  return fetchFromApi<Item>(`item/${name}`);
+}
+
+/** A move by name ("ancient-power"), as it appears in the evolution entry's `known_move` or `used_move`. */
+export function getMove(name: string): Promise<Move> {
+  return fetchFromApi<Move>(`move/${name}`);
+}
+
+/** A location by name ("dusty-bowl"), as it appears in an evolution entry's `location.name`. */
+export function getLocation(name: string): Promise<Location> {
+  return fetchFromApi<Location>(`location/${name}`);
+}
+
 /** A type and every Pokémon form that has it; used to build the type lookup. */
 function getType(name: string): Promise<PokemonTypeData> {
   return fetchFromApi<PokemonTypeData>(`type/${name}`);
@@ -217,6 +341,21 @@ export function getFormName(
   species: PokemonSpecies,
 ): string {
   return findEnglish(form?.names ?? []) ?? getEnglishName(species);
+}
+
+/** English display name of an item, e.g. "Thunder Stone"; falls back to the API's name. */
+export function getItemName(item: Item): string {
+  return findEnglish(item.names) ?? item.name;
+}
+
+/** English display name of a move, e.g. "Acient Power"; falls back to the API's name. */
+export function getMoveName(move: Move): string {
+  return findEnglish(move.names) ?? move.name;
+}
+
+/** English display name of a location, e.g. "Dusty Bowl"; falls back to the API's name. */
+export function getLocationName(location: Location): string {
+  return findEnglish(location.names) ?? location.name;
 }
 
 /** The species' default variety (the one marked is_default, or the first if none is). */

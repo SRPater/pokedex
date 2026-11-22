@@ -1,0 +1,35 @@
+import { EvolutionDetail } from "./pokeapi";
+
+/** An entry with every field filled in; tests override only what they care about. */
+export const makeDetail = (
+  overrides: Partial<EvolutionDetail> = {},
+): EvolutionDetail => ({
+  is_default: true,
+  required_pokemon_form: null,
+  evolved_pokemon_form: null,
+  trigger: { name: "level-up", url: "" },
+  item: null,
+  held_item: null,
+  min_level: null,
+  min_happiness: null,
+  time_of_day: "",
+  min_damage_taken: null,
+  min_steps: null,
+  gender: null,
+  known_move: null,
+  known_move_type: null,
+  used_move: null,
+  min_move_count: null,
+  relative_physical_stats: null,
+  needs_overworld_rain: false,
+  turn_upside_down: false,
+  needs_multiplayer: false,
+  region: null,
+  party_type: null,
+  condition_expression: null,
+  trade_species: null,
+  party_species: null,
+  location: null,
+  allowed_natures: null,
+  ...overrides,
+});

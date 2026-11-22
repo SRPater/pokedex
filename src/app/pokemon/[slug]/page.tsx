@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 
+import { getEvolutionPathsForPage } from "@/lib/evolution";
 import {
   getDefaultFormName,
   getEnglishName,
@@ -23,14 +24,13 @@ import {
   isFemale,
 } from "@/lib/variety";
 
-import CryButton from "@/components/CryButton";
 import DetailHeader from "@/components/DetailHeader";
+import EvolutionCard from "@/components/EvolutionCard";
 import FormsCard from "@/components/FormsCard";
 import GenderSwitch from "@/components/GenderSwitch";
 import OverviewCard from "@/components/OverviewCard";
 import ShinyToggle from "@/components/ShinyToggle";
 import StatsCard from "@/components/StatsCard";
-import TypeMatchupsCard from "@/components/TypeMatchupsCard";
 
 // Tab title for /pokemon/[slug], e.g. "Charizard | Pokédex" (the " | Pokédex"
 // comes from the template in the root layout).
@@ -116,18 +116,13 @@ export default async function PokemonDetailPage({
   const shinyHref = `/pokemon/${species.name}${toggleQuery ? `?${toggleQuery}` : ""}`;
 
   const [
-    {
-      pokemon,
-      selectedId,
-      selectedLabel,
-      otherEntries,
-      genderCounterpart,
-      typeMatchups,
-    },
+    { pokemon, selectedId, selectedLabel, otherEntries, genderCounterpart },
     { previous, next },
+    evolutionPaths,
   ] = await Promise.all([
     getPokemonDetail(species, variety),
     getNeighbours(species),
+    getEvolutionPathsForPage(species, selectedName),
   ]);
 
   // Species whose female only looks different (no variety of her own, e.g. Pikachu).
@@ -146,7 +141,6 @@ export default async function PokemonDetailPage({
         </h1>
         <p className="text-center text-lg text-gray-500">{getGenus(species)}</p>
       </DetailHeader>
-
       {/* The wrapper is exactly as wide as the image (w-64 = 256px) and centered, so the
           image stays centered on the page. The toggle sits outside its right edge
           (left-full) and is centered vertically, so it doesn't affect the layout. */}
@@ -156,21 +150,12 @@ export default async function PokemonDetailPage({
           alt={getEnglishName(species)}
           width={256}
           height={256}
-          // Above the fold and the largest element, so don't lazy-load it.
           loading="eager"
         />
         <div className="absolute left-full top-1/2 ml-4 -translate-y-1/2">
           <ShinyToggle shiny={shiny} href={shinyHref} />
         </div>
       </div>
-
-      {/* Some form may have no cry (the field is nullable), so only show the button when there is one. */}
-      {pokemon.cries.latest && (
-        <div className="mt-4 flex justify-center">
-          <CryButton src={pokemon.cries.latest} />
-        </div>
-      )}
-
       {genderCounterpart && (
         <GenderSwitch
           selected={selectedIsFemale ? "female" : "male"}
@@ -182,7 +167,6 @@ export default async function PokemonDetailPage({
           )}
         />
       )}
-
       {pictureOnly && (
         <GenderSwitch
           selected={showFemale ? "female" : "male"}
@@ -190,7 +174,6 @@ export default async function PokemonDetailPage({
           femaleHref={keepShiny(`/pokemon/${species.name}?gender=female`)}
         />
       )}
-
       {/* Name the shown form, but only when it adds something beyond the heading. */}
       {selectedLabel && selectedLabel !== getEnglishName(species) && (
         <p className="mt-2 text-center text-gray-500">{selectedLabel}</p>
@@ -202,7 +185,14 @@ export default async function PokemonDetailPage({
           <StatsCard stats={pokemon.stats} />
         </div>
 
-        <TypeMatchupsCard matchups={typeMatchups} />
+        {/* The stages' hrefs are built in getEvolutionPathsForPage, which doesn't know
+            about shiny, so add it here, as for the Forms card below. */}
+        <EvolutionCard
+          paths={evolutionPaths.map((path) =>
+            path.map((stage) => ({ ...stage, href: keepShiny(stage.href) })),
+          )}
+          shiny={shiny}
+        />
 
         {/* The entries' hrefs are built in getPokemonDetail, which doesn't know about
             shiny, so add it here. */}

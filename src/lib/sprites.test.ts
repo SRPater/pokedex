@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getArtworkUrl, getRenderUrl } from "./sprites";
+import { getArtworkUrl, getRenderUrl, getSpriteUrl } from "./sprites";
 
 const BASE =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home";
@@ -28,5 +28,21 @@ describe("getArtworkUrl", () => {
     [{ shiny: true }, `${ARTWORK}/shiny/25.png`],
   ])("%j", (options, expected) => {
     expect(getArtworkUrl(25, options)).toBe(expected);
+  });
+});
+
+const SPRITES =
+  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon";
+
+describe("getSpriteUrl", () => {
+  it.each([
+    [{}, `${SPRITES}/25.png`],
+    [{ shiny: true }, `${SPRITES}/shiny/25.png`],
+  ])("%j", (options, expected) => {
+    expect(getSpriteUrl(25, options)).toBe(expected);
+  });
+
+  it("works without options", () => {
+    expect(getSpriteUrl(25)).toBe(`${SPRITES}/25.png`);
   });
 });

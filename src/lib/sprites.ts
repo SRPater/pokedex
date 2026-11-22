@@ -3,9 +3,14 @@
 const SPRITES_BASE =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites";
 
-/** Small pixel sprites, used in the list and the previous/next buttons. id is a Pokémon ID, forms included. */
-export function getSpriteUrl(id: number): string {
-  return `${SPRITES_BASE}/pokemon/${id}.png`;
+/**
+ * Small pixel sprites, used in the list and the previous/next buttons and the evolution
+ * card. id is a Pokémon ID, forms included. `shiny` picks the shiny version. */
+export function getSpriteUrl(
+  id: number,
+  { shiny = false }: { shiny?: boolean } = {},
+): string {
+  return `${SPRITES_BASE}/pokemon/${shiny ? "shiny/" : ""}${id}.png`;
 }
 
 /**

@@ -62,6 +62,7 @@ export default function OverviewCard({
                   width={200}
                   height={40}
                   className="h-6 w-auto"
+                  loading="eager"
                 />
               </td>
             ))}

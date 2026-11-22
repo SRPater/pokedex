@@ -11,6 +11,7 @@ matchups, alternate forms, shiny pictures and cries.
 - Paged species list with search and sorting by number or name
 - Detail page per species with overview, base stats and type matchups
 - Alternate forms (Mega, Gigantamax, regional, gender) selectable through the URL
+- Evolution lines, with how each evolution happens (level, item, trade, ...), including branching chains and regional forms
 - Shiny and female pictures, and the cry of each form
 - Previous and next navigation in Pokédex order, and a "Random Pokémon" button
 - Responsive layout with light and dark mode support
@@ -55,29 +56,29 @@ No environment variables are needed, because PokéAPI requires no key.
 
 ## Routes
 
-| Route | Description |
-| --- | --- |
-| `/` | Landing page with a link to the list and a "Random Pokémon" button |
-| `/pokemon` | Species list, 20 per page |
+| Route             | Description                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| `/`               | Landing page with a link to the list and a "Random Pokémon" button                        |
+| `/pokemon`        | Species list, 20 per page                                                                 |
 | `/pokemon/[slug]` | Detail page; the slug is the species name (`/pokemon/25` redirects to `/pokemon/pikachu`) |
-| `/pokemon/random` | Redirects to a random species |
+| `/pokemon/random` | Redirects to a random species                                                             |
 
 ### List parameters (`/pokemon`)
 
-| Parameter | Values | Default |
-| --- | --- | --- |
-| `q` | Search text (matches species name) | none |
-| `sort` | `number`, `number-desc`, `name`, `name-desc` | `number` |
-| `page` | Page number | `1` |
+| Parameter | Values                                       | Default  |
+| --------- | -------------------------------------------- | -------- |
+| `q`       | Search text (matches species name)           | none     |
+| `sort`    | `number`, `number-desc`, `name`, `name-desc` | `number` |
+| `page`    | Page number                                  | `1`      |
 
 ### Detail parameters (`/pokemon/[slug]`)
 
-| Parameter | Values | Effect |
-| --- | --- | --- |
-| `form` | `mega`, `mega-x`, `gmax, `zen`, ... | Selects an alternate form |
-| `region` | `alola`, `galar`, `hisui`, `paldea` | Selects a regional variant |
-| `gender` | `female` | Selects the female variety or picture |
-| `shiny` | `true` | Shows the shiny picture |
+| Parameter | Values                              | Effect                                |
+| --------- | ----------------------------------- | ------------------------------------- |
+| `form`    | `mega`, `mega-x`, `gmax, `zen`, ... | Selects an alternate form             |
+| `region`  | `alola`, `galar`, `hisui`, `paldea` | Selects a regional variant            |
+| `gender`  | `female`                            | Selects the female variety or picture |
+| `shiny`   | `true`                              | Shows the shiny picture               |
 
 A parameter that is left out means "same as the default", and a combination that
 doesn't exist redirects to the plain page.
@@ -96,6 +97,8 @@ src/
   lib/
     pokeapi.ts                API types, fetch helper, fetchers, name helpers
     pokemon-detail.ts         Everything the detail page needs beyond the species
+    evolution.ts              Evolution chain to the paths shown in the Evolution card
+    conditions.ts             The short lines that say how an evolution happens
     variety.ts                Variety names <-> URL parameters
     search.ts, sort.ts        Search and sorting for the list
     list-url.ts               The only place that builds list URLs
@@ -114,6 +117,8 @@ The main choices are summarized here. The reasoning behind them is in
 - **State in the URL:** form, region, gender and shiny are query parameters, so every view is linkable and works without client state.
 - **Unoptimized images:** images load straight from GitHub to stay within Vercel's free image transformation limit.
 - **Errors:** only a 404 from PokéAPI becomes a not-found page; anything else goes to the error page.
+- **Evolution paths, not a tree:** the chain is split into one row per path, and the page only shows the paths through the species and form on screen (Jolteon shows Eevee -> Jolteon, Alolan Raichu only the Alolan path).
+- **Only current rules:** a stage shows the evolution entry marked as current, and only conditions that a current entry really uses are shown.
 
 ## Testing
 
@@ -121,8 +126,8 @@ The main choices are summarized here. The reasoning behind them is in
 npm test
 ```
 
-The unit tests cover the URL and variety logic, search, sorting, list URLs and
-type matchups.
+The unit tests cover the URL and variety logic, search, sorting, list URLs, type
+matchups, sprite URLs, evolution paths and evolution conditions.
 
 ## Deployment
 
@@ -131,7 +136,7 @@ automatically. No environment variables are required.
 
 ## Roadmap
 
-- [ ] Evolution lines on the detail page
+- [x] Evolution lines on the detail page
 - [ ] Filters on the list page (by type, by generation)
 - [ ] Favorites, stored in the browser, with a favorites page
 - [ ] Learnsets on the detail page
