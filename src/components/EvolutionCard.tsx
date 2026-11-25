@@ -24,7 +24,7 @@ function Stage({ stage, shiny }: { stage: LinkedStage; shiny: boolean }) {
         className="h-auto w-full"
       />
       <figcaption className="w-[calc(100%+1rem)] text-center">
-        <span className="break-words text-xs sm:text-sm">{stage.label}</span>
+        <span className="wrap-break-word text-xs sm:text-sm">{stage.label}</span>
         {/* How this stage is reached; empty for the first stage, so nothing shows. */}
         <ul className="text-xs text-gray-500">
           {stage.conditions.map((condition) => (
