@@ -160,6 +160,14 @@ linked to its own page. The stage on screen is not a link, which is how it is
 marked. Rows sit in two columns from `lg` up with a thin line between them, and a
 single row is centered. A species that doesn't evolve gets no card.
 
+On small screens a row never wraps. The sprite size is one value per row (`--s`, in
+`EvolutionCard`) that follows the screen width, from 56px up to 96px, so three stages
+and two arrows always fit. The arrow is an item of its own, as high as the sprite, so it
+stays centered on it and can't overlap it. Long names and conditions wrap inside their
+stage and don't widen it. There is one rule for every screen size and no breakpoint per
+phone. Stacking the paths vertically was rejected because Eevee's eight rows would make
+the card very tall, and scrolling sideways hides half of a three-stage row.
+
 **From chain to rows** (`lib/evolution.ts`). `getEvolutionPathsForPage` does these
 steps in order, and each one is a small tested function:
 
@@ -263,8 +271,9 @@ doesn't show the site header on purpose, because it replaces the whole layout.
 - **Tailwind:** class names must be complete literal strings, so values that are
   only known at runtime (bar widths) go through inline `style`.
 - **Small screens:** cards and page padding shrink below `md` (`p-4 md:p-8`,
-  `px-4 md:px-8`), and the gender bar drops its fixed label widths there.
-- **Card titles:** centered, in `Card`, so it holds for every card.
+  `px-4 md:px-8`), and the gender bar drops its fixed label widths there. The Type
+  Matchups headings and column gaps are smaller below `md`, so "Immune To" stays on one
+  line at 320px. The Evolution card scales its sprites instead (see Evolution card).
 
 ## Tests
 

@@ -18,7 +18,7 @@ function MatchupColumn({
 }) {
   return (
     <div className="text-center">
-      <h3 className="mb-2 font-semibold">{title}</h3>
+      <h3 className="mb-2 text-sm font-semibold md:text-base">{title}</h3>
       {entries.length === 0 ? (
         <p className="text-gray-500">None</p>
       ) : (
@@ -65,7 +65,7 @@ export default function TypeMatchupsCard({
 }) {
   return (
     <Card title="Type Matchups">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2 md:gap-4">
         <MatchupColumn title="Weak To" entries={matchups.weak} />
         <MatchupColumn title="Resists" entries={matchups.resists} />
         <MatchupColumn title="Immune To" entries={matchups.immune} />
